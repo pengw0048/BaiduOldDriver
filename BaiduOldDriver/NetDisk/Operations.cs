@@ -13,7 +13,6 @@ namespace NetDisk
     {
         public static QuotaResult GetQuota(Credential credential)
         {
-            if (credential == null) return null;
             try
             {
                 using (var wc = new WebClient())
@@ -24,13 +23,14 @@ namespace NetDisk
                     {
                         var ser = new DataContractJsonSerializer(typeof(QuotaResult));
                         var obj = ser.ReadObject(ms) as QuotaResult;
+                        obj.success = true;
                         return obj;
                     }
                 }
             }
             catch (Exception ex)
             {
-                return new QuotaResult() { ex = ex };
+                return new QuotaResult() { exception = ex };
             }
         }
     }

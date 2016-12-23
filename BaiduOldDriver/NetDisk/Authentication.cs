@@ -101,22 +101,5 @@ namespace NetDisk
             }
             return result;
         }
-        public class LoginResult
-        {
-            public bool success;
-            public Credential credential;
-            public Exception exception;
-        }
-        public class LoginCheckResult
-        {
-            public bool success;
-            public bool needVCode;
-            public string codeString;
-            public string verifyCode;
-            public byte[] image;
-            public Cookie baiduid;
-            public string ltoken;
-            public Exception exception;
-        }
     }
 }

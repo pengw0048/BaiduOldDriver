@@ -40,6 +40,17 @@ namespace NetDisk
                 return;
             }
             Console.WriteLine(loginResult.credential);
+            var credential = loginResult.credential;
+            var quotaResult = Operations.GetQuota(credential);
+            if (!quotaResult.success)
+            {
+                Console.WriteLine(quotaResult.exception);
+                Console.ReadLine();
+                return;
+            }
+            Console.WriteLine(quotaResult.used + "/" + quotaResult.total);
+
+            Console.WriteLine("Success");
             Console.ReadLine();
         }
     }
