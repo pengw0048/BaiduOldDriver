@@ -18,19 +18,19 @@ namespace NetDisk
             if (res == null || res.errno != 0) return false;
             else return true;
         }
-        public static LoginResult Login(string username, string password)
+        public static LoginResult Login(string username, string password, LoginCheckResult checkResult)
         {
             var result = new LoginResult();
             try
             {
                 using (var wc = new CookieAwareWebClient())
                 {
-                    wc.DownloadData("http://pan.baidu.com/");
-                    var str = wc.DownloadString("https://passport.baidu.com/v2/api/?getapi&tpl=netdisk&subpro=netdisk_web&apiver=v3");
-                    var ltoken = Regex.Match(str, "\"token\"\\s*:\\s*\"(.+?)\"").Groups[1].Value;
+                    wc.Cookies.Add(checkResult.baiduid);
+                    var ltoken = checkResult.ltoken;
                     var lstr = "token=" + ltoken + "&tpl=netdisk&username=" + Uri.EscapeDataString(username) + "&password=" + Uri.EscapeDataString(password);
+                    if (checkResult.needVCode) lstr += "&codestring=" + checkResult.codeString + "&verifycode=" + Uri.EscapeDataString(checkResult.verifyCode);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-                    str = Encoding.UTF8.GetString(wc.UploadData("https://passport.baidu.com/v2/api/?login", Encoding.UTF8.GetBytes(lstr)));
+                    var str = Encoding.UTF8.GetString(wc.UploadData("https://passport.baidu.com/v2/api/?login", Encoding.UTF8.GetBytes(lstr)));
                     var match = Regex.Match(str, "error=(\\d+)");
                     var errno = match.Success ? int.Parse(match.Groups[1].Value) : 0;
                     if (errno != 0)
@@ -62,10 +62,60 @@ namespace NetDisk
             }
             return result;
         }
+        public static LoginCheckResult LoginCheck(string username)
+        {
+            var result = new LoginCheckResult();
+            try
+            {
+                using (var wc = new CookieAwareWebClient())
+                {
+                    wc.DownloadData("http://pan.baidu.com/");
+                    Cookie baiduid = null;
+                    foreach (Cookie cookie in wc.Cookies.GetAllCookies())
+                    {
+                        if (cookie.Name.ToLower() == "baiduid") baiduid = cookie;
+                    }
+                    if (baiduid == null) throw new Exception("Cannot obtain BAIDUID.");
+                    result.baiduid = baiduid;
+                    var str = wc.DownloadString("https://passport.baidu.com/v2/api/?getapi&tpl=netdisk&subpro=netdisk_web&apiver=v3");
+                    var ltoken = Regex.Match(str, "\"token\"\\s*:\\s*\"(.+?)\"").Groups[1].Value;
+                    result.ltoken = ltoken;
+                    str = wc.DownloadString("https://passport.baidu.com/v2/api/?logincheck&token=" + ltoken + "&tpl=netdisk&subpro=netdisk_web&apiver=v3&username=" + Uri.EscapeDataString(username));
+                    var codeString = Regex.Match(str, "\"codeString\"\\s*:\\s*\"(.*?)\"").Groups[1].Value;
+                    if (codeString == "")
+                    {
+                        result.success = true;
+                    }
+                    else
+                    {
+                        result.image = wc.DownloadData("https://passport.baidu.com/cgi-bin/genimage?" + codeString);
+                        result.success = true;
+                        result.needVCode = true;
+                        result.codeString = codeString;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result.exception = ex;
+            }
+            return result;
+        }
         public class LoginResult
         {
             public bool success;
             public Credential credential;
+            public Exception exception;
+        }
+        public class LoginCheckResult
+        {
+            public bool success;
+            public bool needVCode;
+            public string codeString;
+            public string verifyCode;
+            public byte[] image;
+            public Cookie baiduid;
+            public string ltoken;
             public Exception exception;
         }
     }
