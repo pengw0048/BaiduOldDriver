@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NetDisk
 {
-    public static class Operations
+    public static class Operation
     {
         public static QuotaResult GetQuota(Credential credential)
         {

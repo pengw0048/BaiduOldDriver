@@ -14,7 +14,7 @@ namespace NetDisk
     {
         public static bool IsLoggedIn(Credential credential)
         {
-            var res = Operations.GetQuota(credential);
+            var res = Operation.GetQuota(credential);
             if (res == null || res.errno != 0) return false;
             else return true;
         }

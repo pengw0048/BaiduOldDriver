@@ -4,10 +4,14 @@ using System.Runtime.Serialization;
 
 namespace NetDisk
 {
-    [DataContract]
-    public class QuotaResult
+    public class Result
     {
         public bool success;
+        public Exception exception;
+    }
+    [DataContract]
+    public class QuotaResult : Result
+    {
         [DataMember]
         public int errno;
         [DataMember]
@@ -18,17 +22,14 @@ namespace NetDisk
         public bool expire;
         [DataMember]
         public long used;
-        public Exception exception;
     }
     [DataContract]
-    public class UserInfoResult
+    public class UserInfoResult : Result
     {
-        public bool success;
         [DataMember]
         public int errno;
         [DataMember]
         public Entry[] records;
-        public Exception exception;
         [DataContract]
         public class Entry
         {
@@ -40,21 +41,37 @@ namespace NetDisk
             public string priority_name;
         }
     }
-    public class LoginResult
+    [DataContract]
+    public class FileListResult : Result
     {
-        public bool success;
-        public Credential credential;
-        public Exception exception;
+        [DataMember]
+        public int errno;
+        [DataMember]
+        public Entry[] list;
+        [DataContract]
+        public class Entry
+        {
+            [DataMember]
+            public int isdir;
+            [DataMember]
+            public string path;
+            [DataMember]
+            public string server_filename;
+            [DataMember]
+            public long size;
+        }
     }
-    public class LoginCheckResult
+    public class LoginResult : Result
     {
-        public bool success;
+        public Credential credential;
+    }
+    public class LoginCheckResult : Result
+    {
         public bool needVCode;
         public string codeString;
         public string verifyCode;
         public byte[] image;
         public Cookie baiduid;
         public string ltoken;
-        public Exception exception;
     }
 }

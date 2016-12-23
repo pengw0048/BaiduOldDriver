@@ -9,18 +9,22 @@ namespace NetDisk
 {
     public class Test
     {
+        static void CheckSuccess(Result result)
+        {
+            if (!result.success)
+            {
+                Console.WriteLine(result.exception);
+                Console.ReadLine();
+                Environment.Exit(-1);
+            }
+        }
         static void Main(string[] args)
         {
             var username = "伪红学家";
             var password = "******";
             // Test login check
             var checkResult = Authentication.LoginCheck(username);
-            if (!checkResult.success)
-            {
-                Console.WriteLine(checkResult.exception);
-                Console.ReadLine();
-                return;
-            }
+            CheckSuccess(checkResult);
             // Handle verify code
             if (checkResult.needVCode)
             {
@@ -41,32 +45,17 @@ namespace NetDisk
             else Console.WriteLine("Verification code NOT required.");
             // Test login
             var loginResult = Authentication.Login(username, password, checkResult);
-            if (!loginResult.success)
-            {
-                Console.WriteLine(loginResult.exception);
-                Console.ReadLine();
-                return;
-            }
+            CheckSuccess(loginResult);
             Console.WriteLine(loginResult.credential);
             Console.WriteLine("uid: " + loginResult.credential.uid);
             var credential = loginResult.credential;
             // Test get quota
-            var quotaResult = Operations.GetQuota(credential);
-            if (!quotaResult.success)
-            {
-                Console.WriteLine(quotaResult.exception);
-                Console.ReadLine();
-                return;
-            }
+            var quotaResult = Operation.GetQuota(credential);
+            CheckSuccess(quotaResult);
             Console.WriteLine(quotaResult.used + "/" + quotaResult.total);
             // Test get user info
-            var infoResult = Operations.GetUserInfo(credential);
-            if (!infoResult.success||infoResult.records.Length != 1)
-            {
-                Console.WriteLine(infoResult.exception);
-                Console.ReadLine();
-                return;
-            }
+            var infoResult = Operation.GetUserInfo(credential);
+            CheckSuccess(infoResult);
             Console.WriteLine(infoResult.records[0].uname + " " + infoResult.records[0].priority_name + " " + infoResult.records[0].avatar_url);
             // Done
             Console.WriteLine("Success");

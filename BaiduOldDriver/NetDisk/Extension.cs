@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NetDisk
 {
-    public static class Extensions
+    public static class Extension
     {
         public static CookieCollection GetAllCookies(this CookieContainer container)
         {
