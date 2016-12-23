@@ -20,6 +20,26 @@ namespace NetDisk
         public long used;
         public Exception exception;
     }
+    [DataContract]
+    public class UserInfoResult
+    {
+        public bool success;
+        [DataMember]
+        public int errno;
+        [DataMember]
+        public Entry[] records;
+        public Exception exception;
+        [DataContract]
+        public class Entry
+        {
+            [DataMember]
+            public string avatar_url;
+            [DataMember]
+            public string uname;
+            [DataMember]
+            public string priority_name;
+        }
+    }
     public class LoginResult
     {
         public bool success;

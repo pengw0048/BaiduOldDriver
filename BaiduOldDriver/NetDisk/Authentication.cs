@@ -39,7 +39,10 @@ namespace NetDisk
                     }
                     else
                     {
-                        wc.DownloadData("https://passport.baidu.com/v3/login/api/auth/?return_type=3&tpl=netdisk&u=http%3A%2F%2Fpan.baidu.com%2Fdisk%2Fhome");
+                        str = wc.DownloadString("https://passport.baidu.com/v3/login/api/auth/?return_type=3&tpl=netdisk&u=http%3A%2F%2Fpan.baidu.com%2Fdisk%2Fhome");
+                        long uid = 0;
+                        match = Regex.Match(str, "\"uk\"\\s*:\\s*(\\d+)");
+                        if (match.Success) long.TryParse(match.Groups[1].Value, out uid);
                         string baiduid = null, bduss = null, stoken = null;
                         foreach (Cookie cookie in wc.Cookies.GetAllCookies())
                         {
@@ -49,7 +52,7 @@ namespace NetDisk
                         }
                         if (baiduid != null && bduss != null && stoken != null)
                         {
-                            result.credential = new Credential(baiduid, bduss, stoken);
+                            result.credential = new Credential(baiduid, bduss, stoken, uid);
                             result.success = true;
                         }
                         else result.exception = new Exception("Cannot find required cookies.");

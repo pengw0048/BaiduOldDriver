@@ -33,5 +33,28 @@ namespace NetDisk
                 return new QuotaResult() { exception = ex };
             }
         }
+        public static UserInfoResult GetUserInfo(Credential credential)
+        {
+            try
+            {
+                if (credential.uid <= 0) throw new Exception("Invalid uid.");
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    var res = wc.DownloadData("http://pan.baidu.com/api/user/getinfo?user_list=[" + credential.uid + "]");
+                    using (var ms = new MemoryStream(res))
+                    {
+                        var ser = new DataContractJsonSerializer(typeof(UserInfoResult));
+                        var obj = ser.ReadObject(ms) as UserInfoResult;
+                        obj.success = true;
+                        return obj;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new UserInfoResult() { exception = ex };
+            }
+        }
     }
 }
