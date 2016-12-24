@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 
 namespace NetDisk
 {
+    [DataContract]
     public class Result
     {
         public bool success;
