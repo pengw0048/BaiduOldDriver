@@ -57,6 +57,10 @@ namespace NetDisk
             var infoResult = Operation.GetUserInfo(credential);
             CheckSuccess(infoResult);
             Console.WriteLine(infoResult.records[0].uname + " " + infoResult.records[0].priority_name + " " + infoResult.records[0].avatar_url);
+            // Test list file
+            var fileListResult = Operation.GetFileList("/", credential);
+            CheckSuccess(fileListResult);
+            Console.WriteLine(string.Join("\r\n", fileListResult.list.Take(5).Select(e => e.path + " " + e.isdir + " " + e.size).ToArray()));
             // Done
             Console.WriteLine("Success");
             Console.ReadLine();

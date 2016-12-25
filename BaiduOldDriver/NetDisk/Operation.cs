@@ -56,5 +56,27 @@ namespace NetDisk
                 return new UserInfoResult() { exception = ex };
             }
         }
+        public static FileListResult GetFileList(string path, Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    var res = wc.DownloadData("http://pan.baidu.com/api/list?page=1&num=10000000&dir=" + Uri.EscapeDataString(path));
+                    using (var ms = new MemoryStream(res))
+                    {
+                        var ser = new DataContractJsonSerializer(typeof(FileListResult));
+                        var obj = ser.ReadObject(ms) as FileListResult;
+                        obj.success = true;
+                        return obj;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new FileListResult() { exception = ex };
+            }
+        }
     }
 }
