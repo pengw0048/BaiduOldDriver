@@ -82,6 +82,11 @@ namespace NetDisk
             public string url;
         }
     }
+    public class FileOperationResult : Result
+    {
+        public int errno;
+        public string path;
+    }
     public class LoginResult : Result
     {
         public Credential credential;

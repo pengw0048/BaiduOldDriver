@@ -77,6 +77,15 @@ namespace NetDisk
             var downloadResult = Operation.GetDownload("/1.mp4", credential);
             CheckSuccess(downloadResult);
             Console.WriteLine("Download URL count = " + downloadResult.urls.Length + " " + downloadResult.urls[0].rank + " " + downloadResult.urls[0].url);
+            // Test file operations
+            var fileopResult = Operation.Copy("/1.mp4", "/", "2.mp4", credential);
+            CheckSuccess(fileopResult);
+            fileopResult = Operation.Move("/2.mp4", "/", "3.mp4", credential);
+            CheckSuccess(fileopResult);
+            fileopResult = Operation.Rename("/3.mp4", "4.mp4", credential);
+            CheckSuccess(fileopResult);
+            fileopResult = Operation.Delete("/4.mp4", credential);
+            CheckSuccess(fileopResult);
             // Done
             Console.WriteLine("Success");
             Console.ReadLine();
