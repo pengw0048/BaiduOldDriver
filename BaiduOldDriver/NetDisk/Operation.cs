@@ -78,5 +78,21 @@ namespace NetDisk
                 return new FileListResult() { exception = ex };
             }
         }
+        public static ThumbnailResult GetThumbnail(string path, Credential credential, int width = 125, int height=90, int quality = 100)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    var res = wc.DownloadData("http://pcsdata.baidu.com/rest/2.0/pcs/thumbnail?app_id=250528&method=generate&path=" + Uri.EscapeDataString(path) + "&quality=" + quality + "&height=" + height + "&width=" + width);
+                    return new ThumbnailResult() { success = true, image = res };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ThumbnailResult() { exception = ex };
+            }
+        }
     }
 }

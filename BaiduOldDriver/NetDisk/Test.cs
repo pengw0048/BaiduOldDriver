@@ -61,6 +61,18 @@ namespace NetDisk
             var fileListResult = Operation.GetFileList("/", credential);
             CheckSuccess(fileListResult);
             Console.WriteLine(string.Join("\r\n", fileListResult.list.Take(5).Select(e => e.path + " " + e.isdir + " " + e.size).ToArray()));
+            // Test thumbnail
+            var thumbnailResult = Operation.GetThumbnail("/1.mp4", credential);
+            CheckSuccess(thumbnailResult);
+            Console.WriteLine("Thumbnail " + thumbnailResult.image.Length + " bytes.");
+            try
+            {
+                File.WriteAllBytes("thumb.jpg", thumbnailResult.image);
+                var process = System.Diagnostics.Process.Start("thumb.jpg");
+                process.WaitForExit();
+                File.Delete("thumb.jpg");
+            }
+            catch (Exception) { }
             // Done
             Console.WriteLine("Success");
             Console.ReadLine();

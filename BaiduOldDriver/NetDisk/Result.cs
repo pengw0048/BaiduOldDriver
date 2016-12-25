@@ -62,6 +62,12 @@ namespace NetDisk
             public long size;
         }
     }
+    [DataContract]
+    public class ThumbnailResult : Result
+    {
+        [DataMember]
+        public byte[] image;
+    }
     public class LoginResult : Result
     {
         public Credential credential;
