@@ -73,6 +73,10 @@ namespace NetDisk
                 File.Delete("thumb.jpg");
             }
             catch (Exception) { }
+            // Test get download urls
+            var downloadResult = Operation.GetDownload("/1.mp4", credential);
+            CheckSuccess(downloadResult);
+            Console.WriteLine("Download URL count = " + downloadResult.urls.Length + " " + downloadResult.urls[0].rank + " " + downloadResult.urls[0].url);
             // Done
             Console.WriteLine("Success");
             Console.ReadLine();

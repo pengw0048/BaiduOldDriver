@@ -68,6 +68,20 @@ namespace NetDisk
         [DataMember]
         public byte[] image;
     }
+    [DataContract]
+    public class GetDownloadResult : Result
+    {
+        [DataMember]
+        public Entry[] urls;
+        [DataContract]
+        public class Entry
+        {
+            [DataMember]
+            public int rank;
+            [DataMember]
+            public string url;
+        }
+    }
     public class LoginResult : Result
     {
         public Credential credential;

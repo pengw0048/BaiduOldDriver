@@ -94,5 +94,27 @@ namespace NetDisk
                 return new ThumbnailResult() { exception = ex };
             }
         }
+        public static GetDownloadResult GetDownload(string path, Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    var res = wc.DownloadData("http://d.pcs.baidu.com/rest/2.0/pcs/file?app_id=250528&method=locatedownload&ver=4.0&path=" + Uri.EscapeDataString(path));
+                    using (var ms = new MemoryStream(res))
+                    {
+                        var ser = new DataContractJsonSerializer(typeof(GetDownloadResult));
+                        var obj = ser.ReadObject(ms) as GetDownloadResult;
+                        obj.success = true;
+                        return obj;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new GetDownloadResult() { exception = ex };
+            }
+        }
     }
 }
