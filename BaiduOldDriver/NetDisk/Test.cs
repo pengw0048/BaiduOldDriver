@@ -69,8 +69,6 @@ namespace NetDisk
             {
                 File.WriteAllBytes("thumb.jpg", thumbnailResult.image);
                 var process = System.Diagnostics.Process.Start("thumb.jpg");
-                process.WaitForExit();
-                File.Delete("thumb.jpg");
             }
             catch (Exception) { }
             // Test get download urls
@@ -86,6 +84,9 @@ namespace NetDisk
             CheckSuccess(fileopResult);
             fileopResult = Operation.Delete("/4.mp4", credential);
             CheckSuccess(fileopResult);
+            fileopResult = Operation.CreateFolder("/test", credential);
+            CheckSuccess(fileopResult);
+            Console.WriteLine("New folder name: " + fileopResult.path);
             // Done
             Console.WriteLine("Success");
             Console.ReadLine();

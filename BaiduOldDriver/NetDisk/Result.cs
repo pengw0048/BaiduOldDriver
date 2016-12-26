@@ -82,9 +82,12 @@ namespace NetDisk
             public string url;
         }
     }
+    [DataContract]
     public class FileOperationResult : Result
     {
+        [DataMember]
         public int errno;
+        [DataMember]
         public string path;
     }
     public class LoginResult : Result

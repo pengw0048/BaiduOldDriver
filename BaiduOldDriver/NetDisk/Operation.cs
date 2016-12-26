@@ -117,6 +117,30 @@ namespace NetDisk
                 return new GetDownloadResult() { exception = ex };
             }
         }
+        public static FileOperationResult CreateFolder(string path, Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                    var str = "isdir=1&path=" + Uri.EscapeDataString(path);
+                    var res = wc.UploadData("http://pan.baidu.com/api/create?a=commit", Encoding.UTF8.GetBytes(str));
+                    using (var ms = new MemoryStream(res))
+                    {
+                        var ser = new DataContractJsonSerializer(typeof(FileOperationResult));
+                        var obj = ser.ReadObject(ms) as FileOperationResult;
+                        obj.success = true;
+                        return obj;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new FileOperationResult() { exception = ex };
+            }
+        }
         public static FileOperationResult Copy(string path, string dest, string newname, Credential credential)
         {
             var str = "filelist=[{\"path\":\"" + Uri.EscapeDataString(path) + "\",\"dest\":\"" + Uri.EscapeDataString(dest) + "\",\"newname\":\"" + Uri.EscapeDataString(newname) + "\"}]";
