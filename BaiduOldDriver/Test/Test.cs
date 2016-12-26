@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetDisk;
 using System.IO;
 
-namespace NetDisk
+namespace Test
 {
     public class Test
     {
