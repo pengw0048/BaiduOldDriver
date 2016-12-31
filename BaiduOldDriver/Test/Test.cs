@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NetDisk;
+using Downloader;
 using System.IO;
+using System.Threading;
+using System.Diagnostics;
 
 namespace Test
 {
@@ -88,6 +91,22 @@ namespace Test
             fileopResult = Operation.CreateFolder("/test", credential);
             CheckSuccess(fileopResult);
             Console.WriteLine("New folder name: " + fileopResult.path);
+            // Test download
+            var adapter = new BaiduAdapter() { credential = credential, path = "/1.mp4", size = fileListResult.list.First(e => e.path == "/1.mp4").size };
+            var task = new FileTask(adapter, "Z:\\1.mp4");
+            var st = new Stopwatch();
+            st.Start();
+            while (!task.IsCompleted())
+            {
+                Console.WriteLine(task.GetDownloadedBytes());
+                foreach (var item in task.DownloadSources)
+                {
+                    Console.WriteLine("  " + item.URL.Substring(0,20) + " " + item.GetDownloadedBytes());
+                }
+                Thread.Sleep(1000);
+            }
+            st.Stop();
+            Console.WriteLine("Time taken: " + st.ElapsedMilliseconds / 1000);
             // Done
             Console.WriteLine("Success");
             Console.ReadLine();

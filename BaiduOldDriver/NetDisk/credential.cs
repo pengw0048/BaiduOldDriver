@@ -26,5 +26,14 @@ namespace NetDisk
         {
             return credential.cookieString;
         }
+        public string Serialize()
+        {
+            return baiduid + "$" + bduss + "$" + stoken + "$" + uid;
+        }
+        public static Credential Deserialize(string str)
+        {
+            var tokens = str.Split('$');
+            return new Credential(tokens[0], tokens[1], tokens[2], long.Parse(tokens[3]));
+        }
     }
 }

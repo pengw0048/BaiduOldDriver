@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{895C925B-58C5-42E5-B8B2-37A8EBB19823}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{799C6C77-79D2-48EA-A56D-912EEC46B138}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Test</RootNamespace>
-    <AssemblyName>Test</AssemblyName>
+    <RootNamespace>Downloader</RootNamespace>
+    <AssemblyName>Downloader</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -43,17 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Test.cs" />
+    <Compile Include="Adapter.cs" />
+    <Compile Include="BaiduAdapter.cs" />
+    <Compile Include="Block.cs" />
+    <Compile Include="DownloadSource.cs" />
+    <Compile Include="FileTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Downloader\Downloader.csproj">
-      <Project>{799c6c77-79d2-48ea-a56d-912eec46b138}</Project>
-      <Name>Downloader</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NetDisk\NetDisk.csproj">
       <Project>{74eca1bf-6508-417d-bc57-db00daeca618}</Project>
       <Name>NetDisk</Name>
