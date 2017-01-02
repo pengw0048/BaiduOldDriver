@@ -62,10 +62,8 @@ namespace NetDisk
             public long size;
         }
     }
-    [DataContract]
     public class ThumbnailResult : Result
     {
-        [DataMember]
         public byte[] image;
     }
     [DataContract]
@@ -89,6 +87,55 @@ namespace NetDisk
         public int errno;
         [DataMember]
         public string path;
+    }
+    public class OfflineListResult : Result
+    {
+        public Entry[] tasks;
+        public class Entry
+        {
+            public long create_time;
+            public int od_type;
+            public string save_path;
+            public string source_url;
+            public long task_id;
+            public string task_name;
+            public long file_size;
+            public long finished_size;
+            public int status;
+        }
+    }
+    public class QueryLinkResult : Result
+    {
+        public Entry[] files;
+        public string sha1;
+        [DataContract]
+        public class Entry
+        {
+            [DataMember]
+            public string file_name;
+            [DataMember]
+            public long size;
+        }
+    }
+    [DataContract]
+    public class AddOfflineTaskResult: Result
+    {
+        [DataMember]
+        public int rapid_download;
+        [DataMember]
+        public long task_id;
+    }
+    [DataContract]
+    public class ShareResult : Result
+    {
+        [DataMember]
+        public int errno;
+        [DataMember]
+        public long shareid;
+        [DataMember]
+        public string link;
+        [DataMember]
+        public string shorturl;
     }
     public class LoginResult : Result
     {
