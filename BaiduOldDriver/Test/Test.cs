@@ -91,6 +91,41 @@ namespace Test
             fileopResult = Operation.CreateFolder("/test", credential);
             CheckSuccess(fileopResult);
             Console.WriteLine("New folder name: " + fileopResult.path);
+            // Test share
+            var shareResult = Operation.Share(new[] { "/1.mp4" }, credential);
+            CheckSuccess(shareResult);
+            Console.WriteLine(shareResult.link + " " + shareResult.shorturl);
+            shareResult = Operation.Share(new[] { "/1.mp4" }, credential, "8888");
+            CheckSuccess(shareResult);
+            Console.WriteLine(shareResult.link + " " + shareResult.shorturl);
+            // Test offline
+            var queryLinkResult = Operation.QueryLinkFiles("/downfile.torrent", credential);
+            CheckSuccess(queryLinkResult);
+            queryLinkResult.files.ToList().ForEach(f => Console.WriteLine(f.file_name + " " + f.size));
+            var addOfflineResult = Operation.AddOfflineTask("/downfile.torrent", "/", credential, new[] { 1 }, queryLinkResult.sha1);
+            CheckSuccess(addOfflineResult);
+            Console.WriteLine(addOfflineResult.task_id + " " + addOfflineResult.rapid_download);
+            addOfflineResult = Operation.AddOfflineTask("http://www.baidu.com/", "/", credential);
+            CheckSuccess(addOfflineResult);
+            Console.WriteLine(addOfflineResult.task_id + " " + addOfflineResult.rapid_download);
+            addOfflineResult = Operation.AddOfflineTask("magnet:?xt=urn:btih:eb748516ee0968422d9827a9991d28cbd4dc4f3f", "/", credential, new[] { 1, 2 });
+            CheckSuccess(addOfflineResult);
+            Console.WriteLine(addOfflineResult.task_id + " " + addOfflineResult.rapid_download);
+            addOfflineResult = Operation.AddOfflineTask("ed2k://|file|[柳井正与优衣库].蔡成平.文字版(ED2000.COM).epub|890525|90a92b89df20a8b2283fe3450f872590|h=oxrt54bznbtq5pr47dfmj4zfn5ctbvek|/", "/", credential);
+            CheckSuccess(addOfflineResult);
+            Console.WriteLine(addOfflineResult.task_id + " " + addOfflineResult.rapid_download);
+            var offlineListResult = Operation.GetOfflineList(credential);
+            CheckSuccess(offlineListResult);
+            offlineListResult.tasks.ToList().ForEach(t => Console.WriteLine(t.status + " " + t.task_id + " " + t.task_name + " " + t.finished_size + "/" + t.file_size + " " + t.od_type));
+            foreach (var item in offlineListResult.tasks)
+            {
+                Operation.CancelOfflineTask(item.task_id, credential);
+                Operation.DeleteOfflineTask(item.task_id, credential);
+            }
+            offlineListResult = Operation.GetOfflineList(credential);
+            CheckSuccess(offlineListResult);
+            Debug.Assert(offlineListResult.tasks.Length == 0);
+            Console.WriteLine("Offline list cleared.");
             // Test download
             var adapter = new BaiduAdapter() { credential = credential, path = "/1.mp4", size = fileListResult.list.First(e => e.path == "/1.mp4").size };
             var task = new FileTask(adapter, "Z:\\1.mp4");

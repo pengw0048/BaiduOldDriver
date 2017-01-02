@@ -6,7 +6,9 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace NetDisk
 {
@@ -201,32 +203,31 @@ namespace NetDisk
                     {
                         var ser1 = new DataContractJsonSerializer(typeof(ListTaskResult));
                         var ltr = ser1.ReadObject(ms1) as ListTaskResult;
+                        if (ltr.task_info.Length == 0) return new OfflineListResult() { success = true, tasks = new OfflineListResult.Entry[0] };
                         var str = "method=query_task&op_type=1&task_ids=" + Uri.EscapeDataString(string.Join(",", ltr.task_info.Select(e => e.task_id.ToString())));
                         wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                         var res2 = wc.UploadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528", Encoding.UTF8.GetBytes(str));
-                        using(var ms2 = new MemoryStream(res2))
+                        var qtr = JsonConvert.DeserializeObject<QueryTaskResult>(Encoding.UTF8.GetString(res2));
+                        return new OfflineListResult()
                         {
-                            var ser2 = new DataContractJsonSerializer(typeof(QueryTaskResult));
-                            var qtr = ser2.ReadObject(ms2) as QueryTaskResult;
-                            return new OfflineListResult()
+                            tasks = ltr.task_info.Select(e =>
                             {
-                                tasks = ltr.task_info.Select(e => {
-                                    var ai = qtr.task_info[e.task_id.ToString()];
-                                    return new OfflineListResult.Entry()
-                                    {
-                                        create_time = e.create_time,
-                                        od_type = e.od_type,
-                                        save_path = e.save_path,
-                                        source_url = e.source_url,
-                                        task_id = e.task_id,
-                                        task_name = e.task_name,
-                                        file_size = ai.file_size,
-                                        finished_size = ai.finished_size,
-                                        status = ai.status
-                                    };
-                                }).ToArray(), success=true
-                            };
-                        }
+                                var ai = qtr.task_info[e.task_id.ToString()];
+                                return new OfflineListResult.Entry()
+                                {
+                                    create_time = e.create_time,
+                                    od_type = e.od_type,
+                                    save_path = e.save_path,
+                                    source_url = e.source_url,
+                                    task_id = e.task_id,
+                                    task_name = e.task_name,
+                                    file_size = ai.file_size,
+                                    finished_size = ai.finished_size,
+                                    status = ai.status
+                                };
+                            }).ToArray(),
+                            success = true
+                        };
                     }
                 }
             }
@@ -336,12 +337,12 @@ namespace NetDisk
                 if (pwd == null) str += "public=1&schannel=0";
                 else str += "public=0&schannel=4&pwd=" + pwd;
                 var rand = new Random();
-                var logid = string.Join("", Enumerable.Range(0, 100).Select(i => 'a' + rand.Next(26)));
+                var logid = new string(Enumerable.Range(0, 100).Select(i => (char)('a' + rand.Next(26))).ToArray());
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-                    var res = wc.UploadData("http://pan.baidu.com/share/pset?clienttype=8&logid=" + logid, Encoding.UTF8.GetBytes(str));
+                    var res = wc.UploadData("http://pan.baidu.com/share/pset?clienttype=8&channel=00000000000000000000000000000000&version=5.4.5.4&devuid=123456&logid=" + logid, Encoding.UTF8.GetBytes(str));
                     using (var ms = new MemoryStream(res))
                     {
                         var ser = new DataContractJsonSerializer(typeof(ShareResult));
