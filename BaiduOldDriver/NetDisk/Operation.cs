@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace NetDisk
@@ -21,14 +17,10 @@ namespace NetDisk
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
-                    var res = wc.DownloadData("http://pan.baidu.com/api/quota?checkexpire=1&checkfree=1");
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(QuotaResult));
-                        var obj = ser.ReadObject(ms) as QuotaResult;
-                        obj.success = true;
-                        return obj;
-                    }
+                    var res = wc.DownloadString("http://pan.baidu.com/api/quota?checkexpire=1&checkfree=1");
+                    var obj = JsonConvert.DeserializeObject<QuotaResult>(res);
+                    obj.success = true;
+                    return obj;
                 }
             }
             catch (Exception ex)
@@ -44,14 +36,10 @@ namespace NetDisk
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
-                    var res = wc.DownloadData("http://pan.baidu.com/api/user/getinfo?user_list=[" + credential.uid + "]");
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(UserInfoResult));
-                        var obj = ser.ReadObject(ms) as UserInfoResult;
-                        obj.success = true;
-                        return obj;
-                    }
+                    var res = wc.DownloadString("http://pan.baidu.com/api/user/getinfo?user_list=[" + credential.uid + "]");
+                    var obj = JsonConvert.DeserializeObject<UserInfoResult>(res);
+                    obj.success = true;
+                    return obj;
                 }
             }
             catch (Exception ex)
@@ -66,14 +54,10 @@ namespace NetDisk
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
-                    var res = wc.DownloadData("http://pan.baidu.com/api/list?page=1&num=10000000&dir=" + Uri.EscapeDataString(path));
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(FileListResult));
-                        var obj = ser.ReadObject(ms) as FileListResult;
-                        obj.success = true;
-                        return obj;
-                    }
+                    var res = wc.DownloadString("http://pan.baidu.com/api/list?page=1&num=10000000&dir=" + Uri.EscapeDataString(path));
+                    var obj = JsonConvert.DeserializeObject<FileListResult>(res);
+                    obj.success = true;
+                    return obj;
                 }
             }
             catch (Exception ex)
@@ -81,7 +65,7 @@ namespace NetDisk
                 return new FileListResult() { exception = ex };
             }
         }
-        public static ThumbnailResult GetThumbnail(string path, Credential credential, int width = 125, int height=90, int quality = 100)
+        public static ThumbnailResult GetThumbnail(string path, Credential credential, int width = 125, int height = 90, int quality = 100)
         {
             try
             {
@@ -105,14 +89,10 @@ namespace NetDisk
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.UserAgent, "netdisk;5.4.5.4;PC;PC-Windows;10.0.14393;WindowsBaiduYunGuanJia");
-                    var res = wc.DownloadData("http://d.pcs.baidu.com/rest/2.0/pcs/file?app_id=250528&method=locatedownload&ver=4.0&path=" + Uri.EscapeDataString(path));
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(GetDownloadResult));
-                        var obj = ser.ReadObject(ms) as GetDownloadResult;
-                        obj.success = true;
-                        return obj;
-                    }
+                    var res = wc.DownloadString("http://d.pcs.baidu.com/rest/2.0/pcs/file?app_id=250528&method=locatedownload&ver=4.0&path=" + Uri.EscapeDataString(path));
+                    var obj = JsonConvert.DeserializeObject<GetDownloadResult>(res);
+                    obj.success = true;
+                    return obj;
                 }
             }
             catch (Exception ex)
@@ -130,13 +110,9 @@ namespace NetDisk
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                     var str = "isdir=1&path=" + Uri.EscapeDataString(path);
                     var res = wc.UploadData("http://pan.baidu.com/api/create?a=commit", Encoding.UTF8.GetBytes(str));
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(FileOperationResult));
-                        var obj = ser.ReadObject(ms) as FileOperationResult;
-                        obj.success = true;
-                        return obj;
-                    }
+                    var obj = JsonConvert.DeserializeObject<FileOperationResult>(Encoding.UTF8.GetString(res));
+                    obj.success = true;
+                    return obj;
                 }
             }
             catch (Exception ex)
@@ -173,17 +149,13 @@ namespace NetDisk
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                     var res = wc.UploadData(url, Encoding.UTF8.GetBytes(str));
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(FileOpResult));
-                        var obj = ser.ReadObject(ms) as FileOpResult;
-                        if (obj.info.Length == 0 && obj.errno != 0)
-                            return new FileOperationResult() { success = true, errno = obj.errno };
-                        else if (obj.info.Length == 0 || obj.errno != 0 && obj.info[0].errno == 0)
-                            throw new Exception("Response data malformat.");
-                        else
-                            return new FileOperationResult() { success = true, errno = obj.info[0].errno, path = obj.info[0].path };
-                    }
+                    var obj = JsonConvert.DeserializeObject<FileOpResult>(Encoding.UTF8.GetString(res));
+                    if (obj.info.Length == 0 && obj.errno != 0)
+                        return new FileOperationResult() { success = true, errno = obj.errno };
+                    else if (obj.info.Length == 0 || obj.errno != 0 && obj.info[0].errno == 0)
+                        throw new Exception("Response data malformat.");
+                    else
+                        return new FileOperationResult() { success = true, errno = obj.info[0].errno, path = obj.info[0].path };
                 }
             }
             catch (Exception ex)
@@ -198,37 +170,33 @@ namespace NetDisk
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
-                    var res1 = wc.DownloadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=list_task&need_task_info=1&status=255");
-                    using (var ms1 = new MemoryStream(res1))
+                    var res1 = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=list_task&need_task_info=1&status=255");
+                    var ltr = JsonConvert.DeserializeObject<ListTaskResult>(res1);
+                    if (ltr.task_info.Length == 0) return new OfflineListResult() { success = true, tasks = new OfflineListResult.Entry[0] };
+                    var str = "method=query_task&op_type=1&task_ids=" + Uri.EscapeDataString(string.Join(",", ltr.task_info.Select(e => e.task_id.ToString())));
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                    var res2 = wc.UploadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528", Encoding.UTF8.GetBytes(str));
+                    var qtr = JsonConvert.DeserializeObject<QueryTaskResult>(Encoding.UTF8.GetString(res2));
+                    return new OfflineListResult()
                     {
-                        var ser1 = new DataContractJsonSerializer(typeof(ListTaskResult));
-                        var ltr = ser1.ReadObject(ms1) as ListTaskResult;
-                        if (ltr.task_info.Length == 0) return new OfflineListResult() { success = true, tasks = new OfflineListResult.Entry[0] };
-                        var str = "method=query_task&op_type=1&task_ids=" + Uri.EscapeDataString(string.Join(",", ltr.task_info.Select(e => e.task_id.ToString())));
-                        wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-                        var res2 = wc.UploadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528", Encoding.UTF8.GetBytes(str));
-                        var qtr = JsonConvert.DeserializeObject<QueryTaskResult>(Encoding.UTF8.GetString(res2));
-                        return new OfflineListResult()
+                        tasks = ltr.task_info.Select(e =>
                         {
-                            tasks = ltr.task_info.Select(e =>
+                            var ai = qtr.task_info[e.task_id.ToString()];
+                            return new OfflineListResult.Entry()
                             {
-                                var ai = qtr.task_info[e.task_id.ToString()];
-                                return new OfflineListResult.Entry()
-                                {
-                                    create_time = e.create_time,
-                                    od_type = e.od_type,
-                                    save_path = e.save_path,
-                                    source_url = e.source_url,
-                                    task_id = e.task_id,
-                                    task_name = e.task_name,
-                                    file_size = ai.file_size,
-                                    finished_size = ai.finished_size,
-                                    status = ai.status
-                                };
-                            }).ToArray(),
-                            success = true
-                        };
-                    }
+                                create_time = e.create_time,
+                                od_type = e.od_type,
+                                save_path = e.save_path,
+                                source_url = e.source_url,
+                                task_id = e.task_id,
+                                task_name = e.task_name,
+                                file_size = ai.file_size,
+                                finished_size = ai.finished_size,
+                                status = ai.status
+                            };
+                        }).ToArray(),
+                        success = true
+                    };
                 }
             }
             catch (Exception ex)
@@ -264,33 +232,25 @@ namespace NetDisk
         {
             try
             {
-                using(var wc = new WebClient())
+                using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     if (link.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase))
                     {
-                        var res = wc.DownloadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_magnetinfo&source_url=" + Uri.EscapeDataString(link));
-                        using (var ms = new MemoryStream(res))
-                        {
-                            var ser = new DataContractJsonSerializer(typeof(QueryMagnetResult));
-                            var obj = ser.ReadObject(ms) as QueryMagnetResult;
-                            return new QueryLinkResult() { success = true, files = obj.magnet_info.file_info };
-                        }
+                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_magnetinfo&source_url=" + Uri.EscapeDataString(link));
+                        var obj = JsonConvert.DeserializeObject<QueryMagnetResult>(res);
+                        return new QueryLinkResult() { success = true, files = obj.magnet_info.file_info };
                     }
                     else if (link.EndsWith(".torrent", StringComparison.OrdinalIgnoreCase))
                     {
-                        var res = wc.DownloadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_sinfo&type=2&source_path=" + Uri.EscapeDataString(link));
-                        using (var ms = new MemoryStream(res))
-                        {
-                            var ser = new DataContractJsonSerializer(typeof(QueryTorrentResult));
-                            var obj = ser.ReadObject(ms) as QueryTorrentResult;
-                            return new QueryLinkResult() { success = true, files = obj.torrent_info.file_info };
-                        }
+                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_sinfo&type=2&source_path=" + Uri.EscapeDataString(link));
+                        var obj = JsonConvert.DeserializeObject<QueryTorrentResult>(res);
+                        return new QueryLinkResult() { success = true, files = obj.torrent_info.file_info };
                     }
                     else throw new Exception("Not a magnet link or a torrent file.");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new QueryLinkResult() { exception = ex };
             }
@@ -314,13 +274,9 @@ namespace NetDisk
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                     var res = wc.UploadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528", Encoding.UTF8.GetBytes(str));
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(AddOfflineTaskResult));
-                        var obj = ser.ReadObject(ms) as AddOfflineTaskResult;
-                        obj.success = true;
-                        return obj;
-                    }
+                    var obj = JsonConvert.DeserializeObject<AddOfflineTaskResult>(Encoding.UTF8.GetString(res));
+                    obj.success = true;
+                    return obj;
                 }
             }
             catch (Exception ex)
@@ -343,13 +299,9 @@ namespace NetDisk
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                     var res = wc.UploadData("http://pan.baidu.com/share/pset?clienttype=8&channel=00000000000000000000000000000000&version=5.4.5.4&devuid=123456&logid=" + logid, Encoding.UTF8.GetBytes(str));
-                    using (var ms = new MemoryStream(res))
-                    {
-                        var ser = new DataContractJsonSerializer(typeof(ShareResult));
-                        var obj = ser.ReadObject(ms) as ShareResult;
-                        obj.success = true;
-                        return obj;
-                    }
+                    var obj = JsonConvert.DeserializeObject<ShareResult>(Encoding.UTF8.GetString(res));
+                    obj.success = true;
+                    return obj;
                 }
             }
             catch (Exception ex)
