@@ -143,14 +143,20 @@ namespace NetDisk
         [DataMember]
         public int errno;
         [DataMember]
-        public Entry[] info;
+        public Extra extra;
         [DataContract]
-        public class Entry
+        public class Extra
         {
             [DataMember]
-            public int errno;
-            [DataMember]
-            public string path;
+            public Entry[] list;
+            [DataContract]
+            public class Entry
+            {
+                [DataMember]
+                public string from;
+                [DataMember]
+                public string to;
+            }
         }
     }
     public class LoginResult : Result

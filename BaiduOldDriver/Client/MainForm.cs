@@ -95,12 +95,13 @@ namespace Client
                         using (var wc = new WebClient())
                         {
                             var str = wc.DownloadString("http://stomakun.me:9999/" + Uri.EscapeDataString(sres.link) + "/" + pwd);
+                            if (str.Contains("Error:") || !str.Contains("http://")) throw new Exception(str);
                             ShowLinks(str);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.ToString());
+                        MessageBox.Show(ex.Message);
                     }
                     listView1.Enabled = true;
                     toolStripButton1.Enabled = true;

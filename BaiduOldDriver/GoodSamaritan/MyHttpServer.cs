@@ -24,10 +24,14 @@ namespace GoodSamaritan
             var ip = p.socket.Client.RemoteEndPoint.ToString().Split(':')[0];
             lock (this)
             {
-                if (lasttime.ContainsKey(ip) && (DateTime.Now - lasttime[ip]).TotalSeconds < 10.0)
+                if (lasttime.ContainsKey(ip) && (DateTime.Now - lasttime[ip]).TotalSeconds < 60.0)
                 {
-                    p.writeFailure();
-                    p.outputStream.WriteLine("Wait 10 seconds before next request");
+                    try
+                    {
+                        p.writeSuccess();
+                        p.outputStream.WriteLine("Error: Wait 60 seconds before next request");
+                    }
+                    catch (Exception) { }
                     return;
                 }
                 lasttime[ip] = DateTime.Now;
@@ -35,9 +39,9 @@ namespace GoodSamaritan
             try
             {
                 var args = p.http_url.Split('/');
-                var tres = Operation.Transfer(Uri.UnescapeDataString(args[1]), "/", cred, args[2]);
+                var tres = Operation.Transfer(Uri.UnescapeDataString(args[1]), "/shared", cred, args[2]);
                 if (tres.success == false || tres.errno != 0) throw tres.exception;
-                var dres = Operation.GetDownload(tres.info[0].path, cred);
+                var dres = Operation.GetDownload(tres.extra.list[0].to, cred);
                 p.writeSuccess();
                 dres.urls.ToList().ForEach(u => p.outputStream.WriteLine(u.url));
             }
@@ -57,7 +61,7 @@ namespace GoodSamaritan
             {
                 lock (this)
                     lasttime.Clear();
-                Thread.Sleep(60 * 1000);
+                Thread.Sleep(600 * 1000);
             }
         }
     }

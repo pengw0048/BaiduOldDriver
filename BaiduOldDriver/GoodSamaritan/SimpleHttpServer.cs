@@ -218,11 +218,15 @@ namespace GoodSamaritan
             listener.Start();
             while (is_active)
             {
-                TcpClient s = listener.AcceptTcpClient();
-                HttpProcessor processor = new HttpProcessor(s, this);
-                Thread thread = new Thread(new ThreadStart(processor.process));
-                thread.Start();
-                Thread.Sleep(1);
+                try
+                {
+                    TcpClient s = listener.AcceptTcpClient();
+                    HttpProcessor processor = new HttpProcessor(s, this);
+                    Thread thread = new Thread(new ThreadStart(processor.process));
+                    thread.Start();
+                    Thread.Sleep(1);
+                }
+                catch (Exception) { }
             }
         }
 

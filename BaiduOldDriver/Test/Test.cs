@@ -98,7 +98,7 @@ namespace Test
             // Test transfer shared files
             var transferResult = Operation.Transfer("http://pan.baidu.com/s/1hsfZ1TM", "/", credential, "1w9w");
             CheckSuccess(transferResult);
-            Console.WriteLine(transferResult.info.Select(e => e.errno + " " + e.path + "\r\n").ToString());
+            Console.WriteLine(transferResult.extra.list.Select(e => e.from + " " + e.to + "\r\n").ToString());
             // Test offline
             var queryLinkResult = Operation.QueryLinkFiles("/downfile.torrent", credential);
             CheckSuccess(queryLinkResult);
