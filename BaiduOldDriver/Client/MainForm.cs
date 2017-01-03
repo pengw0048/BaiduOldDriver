@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NetDisk;
 using System.Net;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Client
 {
@@ -32,6 +34,8 @@ namespace Client
             listView1.Items.Clear();
             listView1.Enabled = false;
             toolStripButton1.Enabled = false;
+            toolStripLabel1.Text = path == "" ? "/" : path;
+            Application.DoEvents();
             var res = Operation.GetFileList("/" + path, cred);
             if (res.success == false || res.errno != 0)
             {
@@ -46,7 +50,6 @@ namespace Client
                     listView1.Items.Add(new ListViewItem(new[] { "", item.server_filename, item.isdir == 0 ? BytesToString(item.size) : DirLabel }));
                 }
             }
-            toolStripLabel1.Text = path == "" ? "/" : path;
             listView1.Enabled = true;
             toolStripButton1.Enabled = true;
         }
@@ -81,30 +84,48 @@ namespace Client
                 }
                 else
                 {
+                    listView1.Enabled = false;
+                    toolStripButton1.Enabled = false;
+                    Application.DoEvents();
                     var pwd = GeneratePwd();
                     var sres = Operation.Share(new[] { path + "/" + line.SubItems[1].Text }, cred, pwd);
-                    if (sres.success == false || sres.errno != 0)
-                    {
-                        MessageBox.Show(sres.exception.ToString());
-                        return;
-                    }
                     try
                     {
+                        if (sres.success == false || sres.errno != 0) throw sres.exception;
                         using (var wc = new WebClient())
                         {
                             var str = wc.DownloadString("http://stomakun.me:9999/" + Uri.EscapeDataString(sres.link) + "/" + pwd);
-                            new ShowLinkForm(str).ShowDialog();
+                            ShowLinks(str);
                         }
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.ToString());
-                        return;
                     }
+                    listView1.Enabled = true;
+                    toolStripButton1.Enabled = true;
                 }
             }
         }
-
+        private void ShowLinks(string str)
+        {
+            using(var sw=new StreamWriter("link.html"))
+            {
+                var html = "";
+                var i = 1;
+                var del = "\n";
+                if (str.Contains("\r\n")) del = "\r\n";
+                else if (str.Contains("\r")) del = "\r";
+                foreach (var item in str.Split(new[] { del }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var match = Regex.Match(item, "https?:\\/\\/(.+?)\\/");
+                    html += "<p><a href=\"" + item + "\">下载地址" + i + (match.Success ? "&nbsp;(" + match.Groups[1].Value + ")" : "") + "</a></p>";
+                    i++;
+                }
+                sw.WriteLine(html);
+            }
+            System.Diagnostics.Process.Start("link.html");
+        }
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Application.Exit();
