@@ -290,7 +290,7 @@ namespace NetDisk
             try
             {
                 if (pwd != null && pwd.Length != 4) throw new Exception("Length of pwd must be 4.");
-                var str = "path_list=[" + string.Join(",", pathlist.Select(p => '"' + p + '"')) + "]&channel_list=[]&shorturl=1&";
+                var str = "path_list=[" + string.Join(",", pathlist.Select(p => '"' + Uri.EscapeDataString(p) + '"')) + "]&channel_list=[]&shorturl=1&";
                 if (pwd == null) str += "public=1&schannel=0";
                 else str += "public=0&schannel=4&pwd=" + pwd;
                 var rand = new Random();
