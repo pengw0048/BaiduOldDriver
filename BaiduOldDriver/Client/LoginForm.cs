@@ -49,6 +49,7 @@ namespace Client
         private void button1_Click(object sender, EventArgs e)
         {
             if (lcr == null) return;
+            lcr.verifyCode = textBox3.Text;
             var res = Authentication.Login(textBox1.Text, textBox2.Text, lcr);
             if (res.success == false)
             {
@@ -59,6 +60,12 @@ namespace Client
             }
             new MainForm(res.credential).Show();
             this.Hide();
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            textBox3.Text = "";
+            textBox1_Leave(null, null);
         }
     }
 }
