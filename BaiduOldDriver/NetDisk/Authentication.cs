@@ -22,7 +22,7 @@ namespace NetDisk
                 {
                     wc.Cookies.Add(checkResult.baiduid);
                     var ltoken = checkResult.ltoken;
-                    var lstr = "token=" + ltoken + "&tpl=netdisk&username=" + Uri.EscapeDataString(username) + "&password=" + Uri.EscapeDataString(password);
+                    var lstr = "loginmerge=true&token=" + ltoken + "&tpl=netdisk&username=" + Uri.EscapeDataString(username) + "&password=" + Uri.EscapeDataString(password);
                     if (checkResult.needVCode) lstr += "&codestring=" + checkResult.codeString + "&verifycode=" + Uri.EscapeDataString(checkResult.verifyCode);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                     var str = Encoding.UTF8.GetString(wc.UploadData("https://passport.baidu.com/v2/api/?login", Encoding.UTF8.GetBytes(lstr)));
