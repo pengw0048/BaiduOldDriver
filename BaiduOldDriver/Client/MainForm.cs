@@ -31,7 +31,7 @@ namespace Client
         {
             listView1.Items.Clear();
             listView1.Enabled = false;
-            toolStripButton1.Enabled = true;
+            toolStripButton1.Enabled = false;
             var res = Operation.GetFileList("/" + path, cred);
             if (res.success == false || res.errno != 0)
             {
@@ -81,7 +81,8 @@ namespace Client
                 }
                 else
                 {
-                    var sres = Operation.Share(new[] { path + "/" + line.SubItems[1].Text }, cred, "1234");
+                    var pwd = GeneratePwd();
+                    var sres = Operation.Share(new[] { path + "/" + line.SubItems[1].Text }, cred, pwd);
                     if (sres.success == false || sres.errno != 0)
                     {
                         MessageBox.Show(sres.exception.ToString());
@@ -91,7 +92,7 @@ namespace Client
                     {
                         using (var wc = new WebClient())
                         {
-                            var str = wc.DownloadString("http://127.0.0.1:9999/" + Uri.EscapeDataString(sres.link) + "/" + "1234");
+                            var str = wc.DownloadString("http://stomakun.me:9999/" + Uri.EscapeDataString(sres.link) + "/" + pwd);
                             new ShowLinkForm(str).ShowDialog();
                         }
                     }
@@ -107,6 +108,19 @@ namespace Client
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Application.Exit();
+        }
+        private string GeneratePwd()
+        {
+            var sb = new StringBuilder();
+            var rand = new Random();
+            for(int i = 0; i < 4; i++)
+            {
+                var type = rand.Next(3);
+                if (type == 0) sb.Append((char)('0' + rand.Next(10)));
+                else if (type == 1) sb.Append((char)('a' + rand.Next(26)));
+                else if (type == 2) sb.Append((char)('A' + rand.Next(26)));
+            }
+            return sb.ToString();
         }
     }
 }
