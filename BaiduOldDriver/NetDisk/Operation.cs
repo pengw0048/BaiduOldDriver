@@ -332,8 +332,8 @@ namespace NetDisk
                         if (obj.errno != 0) throw new Exception("Password verification returned errno = " + obj.errno);
                         str = wc.DownloadString(url);
                     }
-                    str = Regex.Match(str, "_context *=(.*)").Groups[1].Value.Trim();
-                    if (str.EndsWith(";")) str = str.Substring(0, str.Length - 1);
+                    str = Regex.Match(str, "yunData.setData(.*)").Groups[1].Value.Trim();
+                    str = str.Substring(1, str.Length - 3);
                     var obj2 = JsonConvert.DeserializeObject<SharePageData>(str);
                     str = "path=" + Uri.EscapeDataString(path) + "&filelist=[" + string.Join(",", obj2.file_list.list.Select(e => "\"" + Uri.EscapeDataString(e.path) + "\"")) + "]";
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
