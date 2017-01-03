@@ -137,6 +137,22 @@ namespace NetDisk
         [DataMember]
         public string shorturl;
     }
+    [DataContract]
+    public class TransferResult : Result
+    {
+        [DataMember]
+        public int errno;
+        [DataMember]
+        public Entry[] info;
+        [DataContract]
+        public class Entry
+        {
+            [DataMember]
+            public int errno;
+            [DataMember]
+            public string path;
+        }
+    }
     public class LoginResult : Result
     {
         public Credential credential;

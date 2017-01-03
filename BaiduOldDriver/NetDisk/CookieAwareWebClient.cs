@@ -7,7 +7,11 @@ namespace NetDisk
     {
         public CookieContainer Cookies { get; set; }
         public Uri Uri { get; set; }
-
+        Uri _responseUri;
+        public Uri ResponseUri
+        {
+            get { return _responseUri; }
+        }
         public CookieAwareWebClient()
             : this(new CookieContainer())
         {
@@ -30,7 +34,12 @@ namespace NetDisk
             httpRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             return httpRequest;
         }
-
+        protected override WebResponse GetWebResponse(WebRequest request)
+        {
+            WebResponse response = base.GetWebResponse(request);
+            _responseUri = response.ResponseUri;
+            return response;
+        }
         private void ClearCookiesVersion()
         {
             var cc = new CookieContainer();

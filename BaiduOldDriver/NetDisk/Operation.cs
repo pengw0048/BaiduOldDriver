@@ -5,6 +5,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace NetDisk
 {
@@ -309,6 +310,47 @@ namespace NetDisk
                 return new ShareResult() { exception = ex };
             }
         }
+        public static TransferResult Transfer(string url, string path, Credential credential, string pwd = null)
+        {
+            try
+            {
+                using(var wc = new CookieAwareWebClient())
+                {
+                    wc.Cookies.Add(credential);
+                    var str = wc.DownloadString(url);
+                    var rurl = wc.ResponseUri.ToString();
+                    string shareid = null, uk = null;
+                    if (rurl.Contains("/share/init"))
+                    {
+                        if (pwd == null) throw new Exception("Need password.");
+                        shareid = Regex.Match(rurl, "shareid=(\\d+)").Groups[1].Value;
+                        uk = Regex.Match(rurl, "uk=(\\d+)").Groups[1].Value;
+                        wc.Headers.Add(HttpRequestHeader.Referer, rurl);
+                        wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                        var res = wc.UploadData("http://pan.baidu.com/share/verify?shareid=" + shareid + "&uk=" + uk, Encoding.UTF8.GetBytes("vcode=&vcode_str=&pwd=" + pwd));
+                        var obj = JsonConvert.DeserializeObject<VerifyPwdResult>(Encoding.UTF8.GetString(res));
+                        if (obj.errno != 0) throw new Exception("Password verification returned errno = " + obj.errno);
+                        str = wc.DownloadString(url);
+                    }
+                    str = Regex.Match(str, "_context *=(.*)").Groups[1].Value.Trim();
+                    if (str.EndsWith(";")) str = str.Substring(0, str.Length - 1);
+                    var obj2 = JsonConvert.DeserializeObject<SharePageData>(str);
+                    str = "path=" + Uri.EscapeDataString(path) + "&filelist=[" + string.Join(",", obj2.file_list.list.Select(e => "\"" + Uri.EscapeDataString(e.path) + "\"")) + "]";
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                    wc.Headers.Add(HttpRequestHeader.Referer, url);
+                    var rand = new Random();
+                    var logid = new string(Enumerable.Range(0, 100).Select(i => (char)('a' + rand.Next(26))).ToArray());
+                    var res2 = wc.UploadData("http://pan.baidu.com/share/transfer?channel=chunlei&clienttype=0&web=1&app_id=250528&ondup=newcopy&async=1&shareid=" + shareid + "&from=" + uk + "&logid=" + logid + "&bdstoken=" + obj2.bdstoken, Encoding.UTF8.GetBytes(str));
+                    var obj3 = JsonConvert.DeserializeObject<TransferResult>(Encoding.UTF8.GetString(res2));
+                    obj3.success = true;
+                    return obj3;
+                }
+            }
+            catch(Exception ex)
+            {
+                return new TransferResult() { exception = ex };
+            }
+        }
         [DataContract]
         private class FileOpResult
         {
@@ -387,6 +429,32 @@ namespace NetDisk
             {
                 [DataMember]
                 public QueryLinkResult.Entry[] file_info;
+            }
+        }
+        [DataContract]
+        private class VerifyPwdResult
+        {
+            [DataMember]
+            public int errno;
+        }
+        [DataContract]
+        private class SharePageData
+        {
+            [DataMember]
+            public string bdstoken;
+            [DataMember]
+            public FileList file_list;
+            [DataContract]
+            public class FileList
+            {
+                [DataMember]
+                public Entry[] list;
+                [DataContract]
+                public class Entry
+                {
+                    [DataMember]
+                    public string path;
+                }
             }
         }
     }

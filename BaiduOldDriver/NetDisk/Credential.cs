@@ -1,4 +1,6 @@
-﻿namespace NetDisk
+﻿using System.Net;
+
+namespace NetDisk
 {
     public class Credential
     {
@@ -18,6 +20,14 @@
         public static implicit operator string(Credential credential)
         {
             return credential.cookieString;
+        }
+        public static implicit operator CookieCollection(Credential credential)
+        {
+            var c = new CookieCollection();
+            c.Add(new Cookie("BAIDUID", credential.baiduid, "/", ".baidu.com"));
+            c.Add(new Cookie("BDUSS", credential.bduss, "/", ".baidu.com"));
+            c.Add(new Cookie("STOKEN", credential.stoken, "/", ".pan.baidu.com"));
+            return c;
         }
         public string Serialize()
         {
