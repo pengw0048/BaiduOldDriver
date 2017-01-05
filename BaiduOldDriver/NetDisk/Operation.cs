@@ -55,7 +55,7 @@ namespace NetDisk
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
-                    var res = wc.DownloadString("http://pan.baidu.com/api/list?page=1&num=10000000&dir=" + Uri.EscapeDataString(path));
+                    var res = wc.DownloadString(Extension.SafeUri("http://pan.baidu.com/api/list?page=1&num=10000000&dir=" + Uri.EscapeDataString(path)));
                     var obj = JsonConvert.DeserializeObject<FileListResult>(res);
                     obj.success = true;
                     return obj;
@@ -73,7 +73,7 @@ namespace NetDisk
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
-                    var res = wc.DownloadData("http://pcsdata.baidu.com/rest/2.0/pcs/thumbnail?app_id=250528&method=generate&path=" + Uri.EscapeDataString(path) + "&quality=" + quality + "&height=" + height + "&width=" + width);
+                    var res = wc.DownloadData(Extension.SafeUri("http://pcsdata.baidu.com/rest/2.0/pcs/thumbnail?app_id=250528&method=generate&path=" + Uri.EscapeDataString(path) + "&quality=" + quality + "&height=" + height + "&width=" + width));
                     return new ThumbnailResult() { success = true, image = res };
                 }
             }
@@ -90,7 +90,7 @@ namespace NetDisk
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.UserAgent, "netdisk;5.4.5.4;PC;PC-Windows;10.0.14393;WindowsBaiduYunGuanJia");
-                    var res = wc.DownloadString("http://d.pcs.baidu.com/rest/2.0/pcs/file?app_id=250528&method=locatedownload&ver=4.0&path=" + Uri.EscapeDataString(path));
+                    var res = wc.DownloadString(Extension.SafeUri("http://d.pcs.baidu.com/rest/2.0/pcs/file?app_id=250528&method=locatedownload&ver=4.0&path=" + Uri.EscapeDataString(path)));
                     var obj = JsonConvert.DeserializeObject<GetDownloadResult>(res);
                     obj.success = true;
                     return obj;
@@ -174,7 +174,7 @@ namespace NetDisk
                     var res1 = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=list_task&need_task_info=1&status=255");
                     var ltr = JsonConvert.DeserializeObject<ListTaskResult>(res1);
                     if (ltr.task_info.Length == 0) return new OfflineListResult() { success = true, tasks = new OfflineListResult.Entry[0] };
-                    var str = "method=query_task&op_type=1&task_ids=" + Uri.EscapeDataString(string.Join(",", ltr.task_info.Select(e => e.task_id.ToString())));
+                    var str = "method=query_task&op_type=1&task_ids=" + Uri.EscapeDataString(string.Join(",", ltr.task_info.Select(e => e.task_id.ToString()).ToArray()));
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                     var res2 = wc.UploadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528", Encoding.UTF8.GetBytes(str));
                     var qtr = JsonConvert.DeserializeObject<QueryTaskResult>(Encoding.UTF8.GetString(res2));
@@ -238,13 +238,13 @@ namespace NetDisk
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     if (link.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase))
                     {
-                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_magnetinfo&source_url=" + Uri.EscapeDataString(link));
+                        var res = wc.DownloadString(Extension.SafeUri("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_magnetinfo&source_url=" + Uri.EscapeDataString(link)));
                         var obj = JsonConvert.DeserializeObject<QueryMagnetResult>(res);
                         return new QueryLinkResult() { success = true, files = obj.magnet_info.file_info };
                     }
                     else if (link.EndsWith(".torrent", StringComparison.OrdinalIgnoreCase))
                     {
-                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_sinfo&type=2&source_path=" + Uri.EscapeDataString(link));
+                        var res = wc.DownloadString(Extension.SafeUri("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_sinfo&type=2&source_path=" + Uri.EscapeDataString(link)));
                         var obj = JsonConvert.DeserializeObject<QueryTorrentResult>(res);
                         return new QueryLinkResult() { success = true, files = obj.torrent_info.file_info };
                     }
@@ -266,9 +266,9 @@ namespace NetDisk
                 else if (link.StartsWith("ed2k://", StringComparison.OrdinalIgnoreCase))
                     str += "type=3&source_url=" + Uri.EscapeDataString(link);
                 else if (link.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase))
-                    str += "type=4&task_from=5&source_url=" + Uri.EscapeDataString(link) + "&selected_idx=" + string.Join(",", selected.Select(i => i.ToString()));
+                    str += "type=4&task_from=5&source_url=" + Uri.EscapeDataString(link) + "&selected_idx=" + string.Join(",", selected.Select(i => i.ToString()).ToArray());
                 else if (link.EndsWith(".torrent", StringComparison.OrdinalIgnoreCase))
-                    str += "type=2&task_from=5&file_sha1=" + sha1 + "&source_path=" + Uri.EscapeDataString(link) + "&selected_idx=" + string.Join(",", selected.Select(i => i.ToString()));
+                    str += "type=2&task_from=5&file_sha1=" + sha1 + "&source_path=" + Uri.EscapeDataString(link) + "&selected_idx=" + string.Join(",", selected.Select(i => i.ToString()).ToArray());
                 else throw new Exception("Link invalid.");
                 using (var wc = new WebClient())
                 {
@@ -290,7 +290,7 @@ namespace NetDisk
             try
             {
                 if (pwd != null && pwd.Length != 4) throw new Exception("Length of pwd must be 4.");
-                var str = "path_list=[" + string.Join(",", pathlist.Select(p => '"' + Uri.EscapeDataString(p) + '"')) + "]&channel_list=[]&shorturl=1&";
+                var str = "path_list=[" + string.Join(",", pathlist.Select(p => '"' + Uri.EscapeDataString(p) + '"').ToArray()) + "]&channel_list=[]&shorturl=1&";
                 if (pwd == null) str += "public=1&schannel=0";
                 else str += "public=0&schannel=4&pwd=" + pwd;
                 var rand = new Random();
@@ -335,7 +335,7 @@ namespace NetDisk
                     str = Regex.Match(str, "yunData.setData(.*)").Groups[1].Value.Trim();
                     str = str.Substring(1, str.Length - 3);
                     var obj2 = JsonConvert.DeserializeObject<SharePageData>(str);
-                    str = "path=" + Uri.EscapeDataString(path) + "&filelist=[" + string.Join(",", obj2.file_list.list.Select(e => "\"" + Uri.EscapeDataString(e.path) + "\"")) + "]";
+                    str = "path=" + Uri.EscapeDataString(path) + "&filelist=[" + string.Join(",", obj2.file_list.list.Select(e => "\"" + Uri.EscapeDataString(e.path) + "\"").ToArray()) + "]";
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                     wc.Headers.Add(HttpRequestHeader.Referer, url);
                     var rand = new Random();

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Downloader</RootNamespace>
     <AssemblyName>Downloader</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -45,6 +45,7 @@
     <Compile Include="BaiduAdapter.cs" />
     <Compile Include="Block.cs" />
     <Compile Include="DownloadSource.cs" />
+    <Compile Include="Extension.cs" />
     <Compile Include="FileTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

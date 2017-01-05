@@ -5,12 +5,13 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 using System.Windows.Forms;
 using NetDisk;
 using System.Net;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace Client
 {
@@ -94,7 +95,7 @@ namespace Client
                         if (sres.success == false || sres.errno != 0) throw sres.exception;
                         using (var wc = new WebClient())
                         {
-                            var str = wc.DownloadString("http://stomakun.me:9999/" + Uri.EscapeDataString(sres.link) + "/" + pwd);
+                            var str = wc.DownloadString(SafeUri("http://stomakun.me:9999/" + Uri.EscapeDataString(sres.link) + "/" + pwd));
                             if (str.Contains("Error:") || !str.Contains("http://")) throw new Exception(str);
                             ShowLinks(str);
                         }
@@ -143,6 +144,38 @@ namespace Client
                 else if (type == 2) sb.Append((char)('A' + rand.Next(26)));
             }
             return sb.ToString();
+        }
+
+        private const int UnEscapeDotsAndSlashes = 0x2000000;
+        private const int SimpleUserSyntax = 0x20000;
+
+        public static void LeaveDotsAndSlashesEscaped(Uri uri)
+        {
+            if (uri == null)
+                throw new ArgumentNullException("uri");
+
+            FieldInfo fieldInfo = uri.GetType().GetField("m_Syntax", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (fieldInfo == null)
+                throw new MissingFieldException("'m_Syntax' field not found");
+
+            object uriParser = fieldInfo.GetValue(uri);
+            fieldInfo = typeof(UriParser).GetField("m_Flags", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (fieldInfo == null)
+                throw new MissingFieldException("'m_Flags' field not found");
+
+            object uriSyntaxFlags = fieldInfo.GetValue(uriParser);
+
+            // Clear the flag that we don't want
+            uriSyntaxFlags = (int)uriSyntaxFlags & ~UnEscapeDotsAndSlashes;
+            uriSyntaxFlags = (int)uriSyntaxFlags & ~SimpleUserSyntax;
+            fieldInfo.SetValue(uriParser, uriSyntaxFlags);
+        }
+        
+        public static Uri SafeUri(string str)
+        {
+            var uri = new Uri(str);
+            LeaveDotsAndSlashesEscaped(uri);
+            return uri;
         }
     }
 }

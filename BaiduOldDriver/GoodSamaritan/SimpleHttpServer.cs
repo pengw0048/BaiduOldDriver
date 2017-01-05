@@ -73,7 +73,7 @@ namespace GoodSamaritan
                     handlePOSTRequest();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //Console.WriteLine("Exception: " + e.ToString());
                 writeFailure();

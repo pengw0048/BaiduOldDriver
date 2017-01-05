@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Net;
 
 namespace NetDisk
@@ -27,7 +28,7 @@ namespace NetDisk
             WebRequest request = base.GetWebRequest(address);
             if (request is HttpWebRequest)
             {
-                ClearCookiesVersion();
+                BugFix_CookieDomain(this.Cookies.ClearVersion());
                 (request as HttpWebRequest).CookieContainer = this.Cookies;
             }
             HttpWebRequest httpRequest = (HttpWebRequest)request;
@@ -40,15 +41,26 @@ namespace NetDisk
             _responseUri = response.ResponseUri;
             return response;
         }
-        private void ClearCookiesVersion()
+        private void BugFix_CookieDomain(CookieContainer cookieContainer)
         {
-            var cc = new CookieContainer();
-            foreach (Cookie cookie in Cookies.GetAllCookies())
+            System.Type _ContainerType = typeof(CookieContainer);
+            Hashtable table = (Hashtable)_ContainerType.InvokeMember("m_domainTable",
+                                       System.Reflection.BindingFlags.NonPublic |
+                                       System.Reflection.BindingFlags.GetField |
+                                       System.Reflection.BindingFlags.Instance,
+                                       null,
+                                       cookieContainer,
+                                       new object[] { });
+            ArrayList keys = new ArrayList(table.Keys);
+            foreach (string keyObj in keys)
             {
-                cookie.Version = 0;
-                cc.Add(cookie);
+                string key = (keyObj as string);
+                if (key[0] == '.')
+                {
+                    string newKey = key.Remove(0, 1);
+                    table[newKey] = table[keyObj];
+                }
             }
-            Cookies = cc;
         }
     }
 }
