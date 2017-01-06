@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace NetDisk
 {
@@ -350,6 +351,49 @@ namespace NetDisk
             {
                 return new TransferResult() { exception = ex };
             }
+        }
+        public static CommitUploadResult SimpleUpload(string localpath, string remotepath, Credential credential)
+        {
+            try
+            {
+                var size = new FileInfo(localpath).Length;
+                var mtime = (long)(new FileInfo(localpath).LastAccessTime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                var md5 = UploadHelper.GetMD5HashFromFile(localpath);
+                var str = "path=" + remotepath + "&size=" + size + "&isdir=0&block_list=[\"" + md5 + "\"]&autoinit=1&local_mtime=" + mtime + "&method=post";
+                using(var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                    var res = wc.UploadData("http://pan.baidu.com/api/precreate?clienttype=8", Encoding.UTF8.GetBytes(str));
+                    var obj = JsonConvert.DeserializeObject<InitUploadResult>(Encoding.UTF8.GetString(res));
+                    if (obj.errno != 0) throw new Exception("precreate had errno = " + obj.errno);
+                    var boundary = GetBoundary();
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary);
+                    str = "--"+boundary + "\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"name\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+                    var str2 = "\r\n--" + boundary + "--\r\n";
+                    var data = Encoding.UTF8.GetBytes(str).Concat(File.ReadAllBytes(localpath)).Concat(Encoding.UTF8.GetBytes(str2)).ToArray();
+                    res = wc.UploadData("http://c.pcs.baidu.com/rest/2.0/pcs/superfile2?app_id=250528&method=upload&path=" + Uri.EscapeDataString(remotepath) + "&uploadid=" + Uri.EscapeDataString(obj.uploadid) + "&partseq=0&partoffset=0", data);
+                    str = "path=" + remotepath + "&size=" + size + "&isdir=0&uploadid=" + Uri.EscapeDataString(obj.uploadid) + "&block_list=[\"" + md5 + "\"]&method=post&rtype=2&sequence=1&mode=1&local_mtime=" + mtime;
+                    res = wc.UploadData("http://pan.baidu.com/api/create?a=commit&clienttype=8", Encoding.UTF8.GetBytes(str));
+                    var obj2 = JsonConvert.DeserializeObject<CommitUploadResult>(Encoding.UTF8.GetString(res));
+                    obj2.success = true;
+                    return obj2;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return new CommitUploadResult() { exception = ex };
+            }
+        }
+        private static string GetBoundary()
+        {
+            var rand = new Random();
+            var sb = new StringBuilder();
+            for (int i = 0; i < 28; i++) sb.Append('-');
+            for (int i = 0; i < 15; i++) sb.Append((char)(rand.Next(0, 26) + 'a'));
+            var boundary = sb.ToString();
+            return boundary;
         }
         [DataContract]
         private class FileOpResult

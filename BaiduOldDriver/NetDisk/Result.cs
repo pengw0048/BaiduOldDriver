@@ -159,6 +159,38 @@ namespace NetDisk
             }
         }
     }
+    [DataContract]
+    public class InitUploadResult : Result
+    {
+        [DataMember]
+        public int[] block_list;
+        [DataMember]
+        public int errno;
+        [DataMember]
+        public string uploadid;
+    }
+    [DataContract]
+    public class CommitUploadResult : Result
+    {
+        [DataMember]
+        public long ctime;
+        [DataMember]
+        public int errno;
+        [DataMember]
+        public long fs_id;
+        [DataMember]
+        public int isdir;
+        [DataMember]
+        public string md5;
+        [DataMember]
+        public long mtime;
+        [DataMember]
+        public string name;
+        [DataMember]
+        public string path;
+        [DataMember]
+        public long size;
+    }
     public class LoginResult : Result
     {
         public Credential credential;

@@ -72,6 +72,10 @@ namespace Test
                 var process = System.Diagnostics.Process.Start("thumb.jpg");
             }
             catch (Exception) { }
+            // Test simple upload
+            var simpleUploadResult = Operation.SimpleUpload("Z:\\1.rar", "/1.rar", credential);
+            CheckSuccess(simpleUploadResult);
+            Console.WriteLine(simpleUploadResult.path + " " + simpleUploadResult.size);
             // Test get download urls
             var downloadResult = Operation.GetDownload("/1.mp4", credential);
             CheckSuccess(downloadResult);
