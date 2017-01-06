@@ -73,7 +73,7 @@ namespace Test
             }
             catch (Exception) { }
             // Test simple upload
-            var simpleUploadResult = Operation.SimpleUpload("Z:\\1.rar", "/1.rar", credential);
+            var simpleUploadResult = Operation.SimpleUpload("Z:\\1.rar", "/1.rar", credential, "c.pcs.baidu.com");
             CheckSuccess(simpleUploadResult);
             Console.WriteLine(simpleUploadResult.path + " " + simpleUploadResult.size);
             // Test get download urls

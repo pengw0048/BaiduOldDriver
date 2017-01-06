@@ -352,7 +352,7 @@ namespace NetDisk
                 return new TransferResult() { exception = ex };
             }
         }
-        public static CommitUploadResult SimpleUpload(string localpath, string remotepath, Credential credential)
+        public static CommitUploadResult SimpleUpload(string localpath, string remotepath, Credential credential, string host = "c.pcs.baidu.com")
         {
             try
             {
@@ -372,7 +372,7 @@ namespace NetDisk
                     str = "--"+boundary + "\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"name\"\r\nContent-Type: application/octet-stream\r\n\r\n";
                     var str2 = "\r\n--" + boundary + "--\r\n";
                     var data = Encoding.UTF8.GetBytes(str).Concat(File.ReadAllBytes(localpath)).Concat(Encoding.UTF8.GetBytes(str2)).ToArray();
-                    res = wc.UploadData("http://c.pcs.baidu.com/rest/2.0/pcs/superfile2?app_id=250528&method=upload&path=" + Uri.EscapeDataString(remotepath) + "&uploadid=" + Uri.EscapeDataString(obj.uploadid) + "&partseq=0&partoffset=0", data);
+                    res = wc.UploadData("http://" + host + "/rest/2.0/pcs/superfile2?app_id=250528&method=upload&path=" + Uri.EscapeDataString(remotepath) + "&uploadid=" + Uri.EscapeDataString(obj.uploadid) + "&partseq=0&partoffset=0", data);
                     str = "path=" + remotepath + "&size=" + size + "&isdir=0&uploadid=" + Uri.EscapeDataString(obj.uploadid) + "&block_list=[\"" + md5 + "\"]&method=post&rtype=2&sequence=1&mode=1&local_mtime=" + mtime;
                     res = wc.UploadData("http://pan.baidu.com/api/create?a=commit&clienttype=8", Encoding.UTF8.GetBytes(str));
                     var obj2 = JsonConvert.DeserializeObject<CommitUploadResult>(Encoding.UTF8.GetString(res));
