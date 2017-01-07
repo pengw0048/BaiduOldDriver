@@ -214,6 +214,10 @@ namespace NetDisk
         {
             return OfflineTaskOp(taskid, "delete_task", credential);
         }
+        public static Result ClearOfflineTask(Credential credential)
+        {
+            return OfflineTaskOp(0, "clear_task", credential);
+        }
         private static Result OfflineTaskOp(long taskid, string oper, Credential credential)
         {
             try

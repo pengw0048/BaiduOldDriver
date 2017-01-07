@@ -122,6 +122,7 @@ namespace Test
             var offlineListResult = Operation.GetOfflineList(credential);
             CheckSuccess(offlineListResult);
             offlineListResult.tasks.ToList().ForEach(t => Console.WriteLine(t.status + " " + t.task_id + " " + t.task_name + " " + t.finished_size + "/" + t.file_size + " " + t.od_type));
+            Operation.ClearOfflineTask(credential);
             foreach (var item in offlineListResult.tasks)
             {
                 Operation.CancelOfflineTask(item.task_id, credential);
