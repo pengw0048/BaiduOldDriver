@@ -241,15 +241,16 @@ namespace NetDisk
                 using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.UserAgent, "netdisk;5.4.5.4;PC;PC-Windows;10.0.14393;WindowsBaiduYunGuanJia");
                     if (link.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase))
                     {
-                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_magnetinfo&source_url=" + Uri.EscapeDataString(link));
+                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&clienttype=8&method=query_magnetinfo&source_url=" + Uri.EscapeDataString(link));
                         var obj = JsonConvert.DeserializeObject<QueryMagnetResult>(res);
                         return new QueryLinkResult() { success = true, files = obj.magnet_info };
                     }
                     else if (link.EndsWith(".torrent", StringComparison.OrdinalIgnoreCase))
                     {
-                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_sinfo&type=2&source_path=" + Uri.EscapeDataString(link));
+                        var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&clienttype=8&method=query_sinfo&type=2&source_path=" + Uri.EscapeDataString(link));
                         var obj = JsonConvert.DeserializeObject<QueryTorrentResult>(res);
                         return new QueryLinkResult() { success = true, files = obj.torrent_info.file_info };
                     }
@@ -279,7 +280,8 @@ namespace NetDisk
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-                    var res = wc.UploadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528", Encoding.UTF8.GetBytes(str));
+                    wc.Headers.Add(HttpRequestHeader.UserAgent, "netdisk;5.4.5.4;PC;PC-Windows;10.0.14393;WindowsBaiduYunGuanJia");
+                    var res = wc.UploadData("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&clienttype=8", Encoding.UTF8.GetBytes(str));
                     var obj = JsonConvert.DeserializeObject<AddOfflineTaskResult>(Encoding.UTF8.GetString(res));
                     obj.success = true;
                     return obj;

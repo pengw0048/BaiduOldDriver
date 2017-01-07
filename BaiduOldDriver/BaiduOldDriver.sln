@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoodSamaritan", "GoodSamari
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{19AC20F7-9932-42C5-AA0C-95B09572A55D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connoisseur", "Connoisseur\Connoisseur.csproj", "{830F3B0B-9F4F-4720-9F14-A25EAF37410C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{19AC20F7-9932-42C5-AA0C-95B09572A55D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19AC20F7-9932-42C5-AA0C-95B09572A55D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19AC20F7-9932-42C5-AA0C-95B09572A55D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{830F3B0B-9F4F-4720-9F14-A25EAF37410C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{830F3B0B-9F4F-4720-9F14-A25EAF37410C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{830F3B0B-9F4F-4720-9F14-A25EAF37410C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{830F3B0B-9F4F-4720-9F14-A25EAF37410C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
