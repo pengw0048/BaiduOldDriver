@@ -241,7 +241,7 @@ namespace NetDisk
                     {
                         var res = wc.DownloadString("http://pan.baidu.com/rest/2.0/services/cloud_dl?app_id=250528&method=query_magnetinfo&source_url=" + Uri.EscapeDataString(link));
                         var obj = JsonConvert.DeserializeObject<QueryMagnetResult>(res);
-                        return new QueryLinkResult() { success = true, files = obj.magnet_info.file_info };
+                        return new QueryLinkResult() { success = true, files = obj.magnet_info };
                     }
                     else if (link.EndsWith(".torrent", StringComparison.OrdinalIgnoreCase))
                     {
@@ -467,13 +467,7 @@ namespace NetDisk
         private class QueryMagnetResult
         {
             [DataMember]
-            public MagnetInfo magnet_info;
-            [DataContract]
-            public class MagnetInfo
-            {
-                [DataMember]
-                public QueryLinkResult.Entry[] file_info;
-            }
+            public QueryLinkResult.Entry[] magnet_info;
         }
         [DataContract]
         private class VerifyPwdResult
