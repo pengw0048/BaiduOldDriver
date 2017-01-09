@@ -72,6 +72,10 @@ namespace Test
                 var process = System.Diagnostics.Process.Start("thumb.jpg");
             }
             catch (Exception) { }
+            // Test rapid upload
+            var rapidUploadResult = Operation.RapidUpload(UploadHelper.GetFileProperty("Z:\\Thunder9.0.14.358.exe"), "/t.exe", credential);
+            CheckSuccess(rapidUploadResult);
+            Console.WriteLine("Rapid: " + rapidUploadResult.info.path + " " + rapidUploadResult.info.size);
             // Test simple upload
             var simpleUploadResult = Operation.SimpleUpload("Z:\\1.rar", "/1.rar", credential, "c.pcs.baidu.com");
             CheckSuccess(simpleUploadResult);

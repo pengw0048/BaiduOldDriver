@@ -391,7 +391,26 @@ namespace NetDisk
                 return new CommitUploadResult() { exception = ex };
             }
         }
-
+        public static RapidUploadResult RapidUpload(FileProperty prop, string path, Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                    var str = "path=" + Uri.EscapeDataString(path) + "&content-length=" + prop.size + "&content-md5=" + prop.md5 + "&slice-md5=" + prop.slice_md5 + "&content-crc32=" + prop.crc32 + "&local_mtime=" + prop.mtime + "&block_list=[" + string.Join(",", prop.blocks.Select(h => '"' + h + '"')) + "]&rtype=2";
+                    var res = wc.UploadData("http://pan.baidu.com/api/rapidupload?clienttype=8", Encoding.UTF8.GetBytes(str));
+                    var obj = JsonConvert.DeserializeObject<RapidUploadResult>(Encoding.UTF8.GetString(res));
+                    obj.success = true;
+                    return obj;
+                }
+            }
+            catch (Exception ex)
+            {
+                return new RapidUploadResult() { exception = ex };
+            }
+        }
         private static string GetBoundary()
         {
             var rand = new Random();

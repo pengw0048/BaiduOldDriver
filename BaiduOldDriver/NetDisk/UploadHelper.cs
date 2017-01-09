@@ -38,16 +38,6 @@ namespace NetDisk
             }
             return ret;
         }
-        public class FileProperty
-        {
-            public string path;
-            public long size;
-            public string md5;
-            public string slice_md5;
-            public string crc32;
-            public long mtime;
-            public string[] blocks;
-        }
         public static string GetMD5HashFromFile(string fileName)
         {
             using (var file = new FileStream(fileName, FileMode.Open))
@@ -66,5 +56,15 @@ namespace NetDisk
             }
             return sb.ToString();
         }
+    }
+    public class FileProperty
+    {
+        public string path;
+        public long size;
+        public string md5;
+        public string slice_md5;
+        public string crc32;
+        public long mtime;
+        public string[] blocks;
     }
 }
