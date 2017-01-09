@@ -134,6 +134,7 @@ namespace NetDisk
     }
     public class LoginResult : Result
     {
+        public int errno;
         public Credential credential;
     }
     public class LoginCheckResult : Result

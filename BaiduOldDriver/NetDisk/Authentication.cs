@@ -31,6 +31,7 @@ namespace NetDisk
                     if (errno != 0)
                     {
                         result.exception = new Exception("Login returned error = " + errno);
+                        result.errno = errno;
                     }
                     else
                     {
