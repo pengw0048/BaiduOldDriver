@@ -366,7 +366,7 @@ namespace NetDisk
                 var mtime = (long)(new FileInfo(localpath).LastAccessTime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 var md5 = UploadHelper.GetMD5HashFromFile(localpath);
                 var str = "path=" + remotepath + "&size=" + size + "&isdir=0&block_list=[\"" + md5 + "\"]&autoinit=1&local_mtime=" + mtime + "&method=post";
-                using (var wc = new WebClient())
+                using (var wc = new PatientWebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
@@ -435,7 +435,7 @@ namespace NetDisk
         {
             try
             {
-                using (var wc = new WebClient())
+                using (var wc = new PatientWebClient())
                 {
                     var boundary = GetBoundary();
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);

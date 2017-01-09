@@ -57,6 +57,9 @@
     <Compile Include="Credential.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="Operation.cs" />
+    <Compile Include="PatientWebClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Result.cs" />
     <Compile Include="UploadHelper.cs" />
