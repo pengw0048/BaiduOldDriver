@@ -145,4 +145,8 @@ namespace NetDisk
         public Cookie baiduid;
         public string ltoken;
     }
+    public class GetUploadServersResult: Result
+    {
+        public string[] servers;
+    }
 }

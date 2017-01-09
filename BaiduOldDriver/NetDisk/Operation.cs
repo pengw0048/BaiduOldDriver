@@ -487,6 +487,8 @@ namespace NetDisk
         {
             try
             {
+                var servers = GetUploadServers(credential);
+                if (!servers.success) throw servers.exception;
                 var prop = UploadHelper.GetFileProperty(localpath);
                 var session = InitUpload(prop, remotepath, credential);
                 if (!session.success) throw session.exception;
@@ -495,7 +497,7 @@ namespace NetDisk
                 {
                     for(int i = 0; i < prop.blocks.Length; i++)
                     {
-                        var res = UploadBlock(prop, remotepath, session, fs, i, "c3.pcs.baidu.com", credential);
+                        var res = UploadBlock(prop, remotepath, session, fs, i, servers.servers[0], credential);
                         if (!res.success) throw res.exception;
                     }
                 }
@@ -507,6 +509,24 @@ namespace NetDisk
             catch (Exception ex)
             {
                 return new CommitUploadResult() { exception = ex };
+            }
+        }
+        public static GetUploadServersResult GetUploadServers(Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.UserAgent, "netdisk;5.4.5.4;PC;PC-Windows;10.0.14393;WindowsBaiduYunGuanJia");
+                    var res = wc.DownloadString("http://d.pcs.baidu.com/rest/2.0/pcs/file?app_id=250528&method=locateupload&esl=1&ehps=0&upload_version=2.0");
+                    var obj = JsonConvert.DeserializeObject<LocateUploadResponse>(res);
+                    return new GetUploadServersResult() { success = true, servers = obj.servers.Select(s => Regex.Match(s.server, ":\\/\\/(.+)$").Groups[1].Value).ToArray() };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new GetUploadServersResult() { exception = ex };
             }
         }
         private static string GetBoundary()
@@ -584,6 +604,14 @@ namespace NetDisk
         private class SuperFileResponse
         {
             public string md5;
+        }
+        private class LocateUploadResponse
+        {
+            public Entry[] servers;
+            public class Entry
+            {
+                public string server;
+            }
         }
     }
 }

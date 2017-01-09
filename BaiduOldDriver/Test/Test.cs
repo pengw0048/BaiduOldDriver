@@ -76,14 +76,18 @@ namespace Test
             var rapidUploadResult = Operation.RapidUpload(UploadHelper.GetFileProperty("Z:\\Thunder9.0.14.358.exe"), "/t.exe", credential);
             CheckSuccess(rapidUploadResult);
             Console.WriteLine("Rapid: " + rapidUploadResult.info.path + " " + rapidUploadResult.info.size);
+            // Test get upload servers
+            var servers = Operation.GetUploadServers(credential);
+            CheckSuccess(servers);
+            Console.WriteLine("Servers: " + string.Join(" ", servers.servers));
             // Test simple upload
-            var simpleUploadResult = Operation.SimpleUpload("Z:\\1.rar", "/1.rar", credential, "c.pcs.baidu.com");
+            var simpleUploadResult = Operation.SimpleUpload("Z:\\1.rar", "/1.rar", credential, servers.servers[0]);
             CheckSuccess(simpleUploadResult);
-            Console.WriteLine(simpleUploadResult.path + " " + simpleUploadResult.size);
+            Console.WriteLine("Simple: " + simpleUploadResult.path + " " + simpleUploadResult.size);
             // Test chunked upload
             var chunkedUploadResult = Operation.ChunkedUpload("Z:\\2.rar", "/2.rar", credential);
             CheckSuccess(chunkedUploadResult);
-            Console.WriteLine(chunkedUploadResult.path + " " + chunkedUploadResult.size);
+            Console.WriteLine("Chunked: " + chunkedUploadResult.path + " " + chunkedUploadResult.size);
             // Test get download urls
             var downloadResult = Operation.GetDownload("/1.mp4", credential);
             CheckSuccess(downloadResult);
