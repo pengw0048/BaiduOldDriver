@@ -321,7 +321,7 @@ namespace NetDisk
         {
             try
             {
-                using(var wc = new CookieAwareWebClient())
+                using (var wc = new CookieAwareWebClient())
                 {
                     wc.Cookies.Add(credential);
                     var str = wc.DownloadString(url);
@@ -353,7 +353,7 @@ namespace NetDisk
                     return obj3;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new TransferResult() { exception = ex };
             }
@@ -366,7 +366,7 @@ namespace NetDisk
                 var mtime = (long)(new FileInfo(localpath).LastAccessTime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 var md5 = UploadHelper.GetMD5HashFromFile(localpath);
                 var str = "path=" + remotepath + "&size=" + size + "&isdir=0&block_list=[\"" + md5 + "\"]&autoinit=1&local_mtime=" + mtime + "&method=post";
-                using(var wc = new WebClient())
+                using (var wc = new WebClient())
                 {
                     wc.Headers.Add(HttpRequestHeader.Cookie, credential);
                     wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
@@ -375,7 +375,7 @@ namespace NetDisk
                     if (obj.errno != 0) throw new Exception("precreate had errno = " + obj.errno);
                     var boundary = GetBoundary();
                     wc.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary);
-                    str = "--"+boundary + "\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"name\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+                    str = "--" + boundary + "\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"name\"\r\nContent-Type: application/octet-stream\r\n\r\n";
                     var str2 = "\r\n--" + boundary + "--\r\n";
                     var data = Encoding.UTF8.GetBytes(str).Concat(File.ReadAllBytes(localpath)).Concat(Encoding.UTF8.GetBytes(str2)).ToArray();
                     res = wc.UploadData("http://" + host + "/rest/2.0/pcs/superfile2?app_id=250528&method=upload&path=" + Uri.EscapeDataString(remotepath) + "&uploadid=" + Uri.EscapeDataString(obj.uploadid) + "&partseq=0&partoffset=0", data);
@@ -385,13 +385,13 @@ namespace NetDisk
                     obj2.success = true;
                     return obj2;
                 }
-                return null;
             }
             catch (Exception ex)
             {
                 return new CommitUploadResult() { exception = ex };
             }
         }
+
         private static string GetBoundary()
         {
             var rand = new Random();
@@ -401,102 +401,65 @@ namespace NetDisk
             var boundary = sb.ToString();
             return boundary;
         }
-        [DataContract]
         private class FileOpResult
         {
-            [DataMember]
             public int errno;
-            [DataMember]
             public Entry[] info;
-            [DataContract]
             public class Entry
             {
-                [DataMember]
                 public int errno;
-                [DataMember]
                 public string path;
             }
         }
-        [DataContract]
         private class ListTaskResult
         {
-            [DataMember]
             public Entry[] task_info;
-            [DataContract]
             public class Entry
             {
-                [DataMember]
                 public long create_time;
-                [DataMember]
                 public int od_type;
-                [DataMember]
                 public string save_path;
-                [DataMember]
                 public string source_url;
-                [DataMember]
                 public long task_id;
-                [DataMember]
                 public string task_name;
             }
         }
-        [DataContract]
         private class QueryTaskResult
         {
-            [DataMember]
             public Dictionary<string, Entry> task_info;
-            [DataContract]
             public class Entry
             {
-                [DataMember]
                 public long file_size;
-                [DataMember]
                 public long finished_size;
-                [DataMember]
                 public int status;
             }
         }
-        [DataContract]
         private class QueryTorrentResult
         {
-            [DataMember]
             public TorrentInfo torrent_info;
-            [DataContract]
             public class TorrentInfo
             {
-                [DataMember]
                 public QueryLinkResult.Entry[] file_info;
-                [DataMember]
                 public string sha1;
             }
         }
-        [DataContract]
         private class QueryMagnetResult
         {
-            [DataMember]
             public QueryLinkResult.Entry[] magnet_info;
         }
-        [DataContract]
         private class VerifyPwdResult
         {
-            [DataMember]
             public int errno;
         }
-        [DataContract]
         private class SharePageData
         {
-            [DataMember]
             public string bdstoken;
-            [DataMember]
             public FileList file_list;
-            [DataContract]
             public class FileList
             {
-                [DataMember]
                 public Entry[] list;
-                [DataContract]
                 public class Entry
                 {
-                    [DataMember]
                     public string path;
                 }
             }

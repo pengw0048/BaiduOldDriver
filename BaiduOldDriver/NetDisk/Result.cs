@@ -1,64 +1,41 @@
 ﻿using System;
 using System.Net;
-using System.Runtime.Serialization;
 
 namespace NetDisk
 {
-    [DataContract]
     public class Result
     {
         public bool success;
         public Exception exception;
     }
-    [DataContract]
     public class QuotaResult : Result
     {
-        [DataMember]
         public int errno;
-        [DataMember]
         public long total;
-        [DataMember]
         public long free;
-        [DataMember]
         public bool expire;
-        [DataMember]
         public long used;
     }
-    [DataContract]
     public class UserInfoResult : Result
     {
-        [DataMember]
         public int errno;
-        [DataMember]
         public Entry[] records;
-        [DataContract]
         public class Entry
         {
-            [DataMember]
             public string avatar_url;
-            [DataMember]
             public string uname;
-            [DataMember]
             public string priority_name;
         }
     }
-    [DataContract]
     public class FileListResult : Result
     {
-        [DataMember]
         public int errno;
-        [DataMember]
         public Entry[] list;
-        [DataContract]
         public class Entry
         {
-            [DataMember]
             public int isdir;
-            [DataMember]
             public string path;
-            [DataMember]
             public string server_filename;
-            [DataMember]
             public long size;
         }
     }
@@ -66,26 +43,18 @@ namespace NetDisk
     {
         public byte[] image;
     }
-    [DataContract]
     public class GetDownloadResult : Result
     {
-        [DataMember]
         public Entry[] urls;
-        [DataContract]
         public class Entry
         {
-            [DataMember]
             public int rank;
-            [DataMember]
             public string url;
         }
     }
-    [DataContract]
     public class FileOperationResult : Result
     {
-        [DataMember]
         public int errno;
-        [DataMember]
         public string path;
     }
     public class OfflineListResult : Result
@@ -108,88 +77,60 @@ namespace NetDisk
     {
         public Entry[] files;
         public string sha1;
-        [DataContract]
         public class Entry
         {
-            [DataMember]
             public string file_name;
-            [DataMember]
             public long size;
         }
     }
-    [DataContract]
-    public class AddOfflineTaskResult: Result
+    public class AddOfflineTaskResult : Result
     {
-        [DataMember]
         public int rapid_download;
-        [DataMember]
         public long task_id;
     }
-    [DataContract]
     public class ShareResult : Result
     {
-        [DataMember]
         public int errno;
-        [DataMember]
         public long shareid;
-        [DataMember]
         public string link;
-        [DataMember]
         public string shorturl;
     }
-    [DataContract]
     public class TransferResult : Result
     {
-        [DataMember]
         public int errno;
-        [DataMember]
         public Extra extra;
-        [DataContract]
         public class Extra
         {
-            [DataMember]
             public Entry[] list;
-            [DataContract]
             public class Entry
             {
-                [DataMember]
                 public string from;
-                [DataMember]
                 public string to;
             }
         }
     }
-    [DataContract]
     public class InitUploadResult : Result
     {
-        [DataMember]
         public int[] block_list;
-        [DataMember]
         public int errno;
-        [DataMember]
         public string uploadid;
     }
-    [DataContract]
     public class CommitUploadResult : Result
     {
-        [DataMember]
         public long ctime;
-        [DataMember]
         public int errno;
-        [DataMember]
         public long fs_id;
-        [DataMember]
         public int isdir;
-        [DataMember]
         public string md5;
-        [DataMember]
         public long mtime;
-        [DataMember]
         public string name;
-        [DataMember]
         public string path;
-        [DataMember]
         public long size;
+    }
+    public class RapidUploadResult : Result
+    {
+        public int errno;
+        public FileListResult.Entry info;
     }
     public class LoginResult : Result
     {
