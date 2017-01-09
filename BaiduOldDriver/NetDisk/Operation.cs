@@ -411,6 +411,104 @@ namespace NetDisk
                 return new RapidUploadResult() { exception = ex };
             }
         }
+        public static InitUploadResult InitUpload(FileProperty prop, string path, Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                    var str = "path=" + Uri.EscapeDataString(path) + "&size=" + prop.size + "&isdir=0&local_mtime=" + prop.mtime + "&block_list=[" + string.Join(",", prop.blocks.Select(h => '"' + h + '"')) + "]&autoinit=1&method=post";
+                    var res = wc.UploadData("http://pan.baidu.com/api/precreate?clienttype=8", Encoding.UTF8.GetBytes(str));
+                    var obj = JsonConvert.DeserializeObject<InitUploadResult>(Encoding.UTF8.GetString(res));
+                    obj.success = true;
+                    return obj;
+                }
+            }
+            catch (Exception ex)
+            {
+                return new InitUploadResult() { exception = ex };
+            }
+        }
+        public static Result UploadBlock(FileProperty prop, string path, InitUploadResult session, FileStream stream, int blockid, string host, Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    var boundary = GetBoundary();
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary);
+                    var str = "--" + boundary + "\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"name\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+                    var str2 = "\r\n--" + boundary + "--\r\n";
+                    stream.Seek((long)blockid * 4 * 1024 * 1024, SeekOrigin.Begin);
+                    var fdata = new byte[4 * 1024 * 1024];
+                    var len = stream.Read(fdata, 0, fdata.Length);
+                    if (len < fdata.Length)
+                    {
+                        var arr = new byte[len];
+                        Array.Copy(fdata, arr, len);
+                        fdata = arr;
+                    }
+                    var data = Encoding.UTF8.GetBytes(str).Concat(fdata).Concat(Encoding.UTF8.GetBytes(str2)).ToArray();
+                    var res = wc.UploadData("http://" + host + "/rest/2.0/pcs/superfile2?app_id=250528&method=upload&path=" + Uri.EscapeDataString(path) + "&uploadid=" + Uri.EscapeDataString(session.uploadid) + "&partseq=" + blockid + "&partoffset=" + (long)blockid * 4 * 1024 * 1024, data);
+                    var obj = JsonConvert.DeserializeObject<SuperFileResponse>(Encoding.UTF8.GetString(res));
+                    if (obj.md5 != prop.blocks[blockid]) throw new Exception("MD5 mismatch.");
+                    return new Result() { success = true };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Result() { exception = ex };
+            }
+        }
+        public static CommitUploadResult CommitUpload(FileProperty prop, string path, InitUploadResult session, Credential credential)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Headers.Add(HttpRequestHeader.Cookie, credential);
+                    wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                    var str = "path=" + path + "&size=" + prop.size + "&isdir=0&uploadid=" + Uri.EscapeDataString(session.uploadid) + "&block_list=[" + string.Join(",", prop.blocks.Select(h => '"' + h + '"')) + "]&method=post&rtype=2&sequence=1&mode=1&local_mtime=" + prop.mtime;
+                    var res = wc.UploadData("http://pan.baidu.com/api/create?a=commit&clienttype=8", Encoding.UTF8.GetBytes(str));
+                    var obj = JsonConvert.DeserializeObject<CommitUploadResult>(Encoding.UTF8.GetString(res));
+                    obj.success = true;
+                    return obj;
+                }
+            }
+            catch (Exception ex)
+            {
+                return new CommitUploadResult() { exception = ex };
+            }
+        }
+        public static CommitUploadResult ChunkedUpload(string localpath, string remotepath, Credential credential)
+        {
+            try
+            {
+                var prop = UploadHelper.GetFileProperty(localpath);
+                var session = InitUpload(prop, remotepath, credential);
+                if (!session.success) throw session.exception;
+                if (session.errno != 0) throw new Exception("Init upload returned errno = " + session.errno);
+                using (var fs = new FileStream(localpath, FileMode.Open))
+                {
+                    for(int i = 0; i < prop.blocks.Length; i++)
+                    {
+                        var res = UploadBlock(prop, remotepath, session, fs, i, "c3.pcs.baidu.com", credential);
+                        if (!res.success) throw res.exception;
+                    }
+                }
+                var comres = CommitUpload(prop, remotepath, session, credential);
+                if (!comres.success) throw comres.exception;
+                if (comres.errno != 0) throw new Exception("Commit upload returned errno = " + comres.errno);
+                return comres;
+            }
+            catch (Exception ex)
+            {
+                return new CommitUploadResult() { exception = ex };
+            }
+        }
         private static string GetBoundary()
         {
             var rand = new Random();
@@ -482,6 +580,10 @@ namespace NetDisk
                     public string path;
                 }
             }
+        }
+        private class SuperFileResponse
+        {
+            public string md5;
         }
     }
 }

@@ -80,6 +80,10 @@ namespace Test
             var simpleUploadResult = Operation.SimpleUpload("Z:\\1.rar", "/1.rar", credential, "c.pcs.baidu.com");
             CheckSuccess(simpleUploadResult);
             Console.WriteLine(simpleUploadResult.path + " " + simpleUploadResult.size);
+            // Test chunked upload
+            var chunkedUploadResult = Operation.ChunkedUpload("Z:\\2.rar", "/2.rar", credential);
+            CheckSuccess(chunkedUploadResult);
+            Console.WriteLine(chunkedUploadResult.path + " " + chunkedUploadResult.size);
             // Test get download urls
             var downloadResult = Operation.GetDownload("/1.mp4", credential);
             CheckSuccess(downloadResult);
