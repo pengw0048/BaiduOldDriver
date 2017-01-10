@@ -256,7 +256,7 @@ string path: 原文件（夹）的全路径
 Operation.CreateFolder(string path, Credential credential) : FileOperationResult
 ```
 
-如果指定的名字已经存在，会自动改名，例如"/Folder(1)"。
+如果指定的名字已经存在，会自动改名，例如"/Folder(1)"。可以同时新建若干级文件夹。
 
 ### 参数
 
@@ -442,7 +442,7 @@ Credential credential: 身份信息
 Operation.CommitUpload(FileProperty prop, string path, InitUploadResult session, Credential credential) : CommitUploadResult
 ```
 
-上传完成所有
+上传完成所有要求的分块之后，调用此函数提交。返回新建文件的信息。如果文件名已存在，会自动重命名。
 
 ### 参数
 
@@ -466,8 +466,6 @@ int errno: 错误代码
 Operation.GetUploadServers(Credential credential) : GetUploadServersResult
 ```
 
-上传完成所有
-
 ### 参数
 
 Credential credential: 身份信息
@@ -476,4 +474,155 @@ Credential credential: 身份信息
 
 string[] servers: 服务器域名列表
 
+# 分享
+
+## 公开 / 私密分享
+
+```cs
+Operation.Share(string[] pathlist, Credential credential, string pwd = null) : ShareResult
+```
+
+### 参数
+
+string[] pathlist: 要分享的文件（夹）列表
+
+Credential credential: 身份信息
+
+string pwd: 公开分享时，传入 null；私密分享时，传入 4 个字母的字符串，包括数字或大小写字母。
+
+### 返回值
+
+int errno: 错误代码
+
+string link: 分享链接
+
+string shorturl: 分享的短链接
+
+## 转存他人的分享文件
+
+```cs
+Operation.Transfer(string url, string path, Credential credential, string pwd = null) : TransferResult
+```
+
+### 参数
+
+string url: 分享页的地址
+
+string path: 要保存到的文件夹
+
+Credential credential: 身份信息
+
+string pwd: 对于公开分享，传入 null；私密分享时，传入分享的密码。
+
+### 返回值
+
+int errno: 错误代码
+
+TransferResult.Extra.Entry[] extra.list: 转存文件（夹）的信息
+
+extra.list.from: 来自分享的路径
+
+extra.list.to: 保存到的全路径
+
+# 离线下载
+
+可以提交链接，由百度网盘下载指定的文件，保存到网盘中。如果之前已经有人下载过相同的文件，可以实现“秒传”。支持的链接有 HTTP / HTTPS、magnet、ED2K，以及 BT种子。
+
+*注意：BT 种子（.torrent 文件需要先上传到网盘当中）。*
+
+## 获取离线下载任务列表
+
+```cs
+Operation.GetOfflineList(Credential credential) : OfflineListResult
+```
+
+### 参数
+
+Credential credential: 身份信息
+
+### 返回值
+
+OfflineListResult.Entry[] tasks: 离线下载任务的数组
+
+long tasks.create_time: 任务创建时间
+
+string save_path: 保存到的全路径
+
+string source_url: 源地址
+
+long task_id: 下载任务的序号
+
+string task_name: 显示的任务名称
+
+long file_size: 所有文件的大小之和
+
+long finished_size: 完成下载的大小
+
+int status: 任务状态，0 表示完成，其他未知
+
+## 查询磁力链 / BT 种子信息
+
+```cs
+Operation.QueryLinkFiles(string link, Credential credential) : QueryLinkResult
+```
+
+### 参数
+
+string link: 磁力链，或 BT 种子在网盘上的全路径
+
+Credential credential: 身份信息
+
+### 返回值
+
+string sha1: 如果是 BT 种子，稍后需要传入这个字符串
+
+QueryLinkResult.Entry[] files: 种子中包含的文件（夹）信息
+
+string files.file_name: 文件（夹）名称
+
+long size: 文件大小
+
+## 添加离线下载任务
+
+```cs
+Operation.AddOfflineTask(string link, string savepath, Credential credential, int[] selected = null, string sha1 = "") : AddOfflineTaskResult
+```
+
+### 参数
+
+string link: 链接，或 BT 种子在网盘上的全路径
+
+string savepath: 要保存到的文件夹
+
+Credential credential: 身份信息
+
+int[] selected: 对于磁力链或 BT 种子，选中项目在 QueryLinkFiles 返回值当中的下标，从 1 开始计数
+
+string sha1: 如果是 BT 种子，传入 QueryLinkFiles 返回值中的 sha1
+
+### 返回值
+
+int rapid_download: 是否秒传
+
+long task_id: 任务序号
+
+## 取消 / 删除 / 清空离线下载任务
+
+```cs
+Operation.CancelOfflineTask(long taskid, Credential credential) : Result
+Operation.DeleteOfflineTask(long taskid, Credential credential) : Result
+Operation.ClearOfflineTask(Credential credential) : Result
+```
+
+未完成的任务（status != 0）可以取消（Cancel），完成的任务可以删除（Delete）。清空列表（Clear）只删除所有已完成的离线任务。
+
+### 参数
+
+long taskid: AddOfflineTask 返回的任务序号
+
+Credential credential: 身份信息
+
+### 返回值
+
+由 bool success 表示是否成功
 
